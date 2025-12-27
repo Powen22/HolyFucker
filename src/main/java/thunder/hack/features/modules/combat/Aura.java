@@ -111,7 +111,7 @@ public class Aura extends Module {
     private final float aimedPitchStep = 2f;    // Шаг pitch когда целимся
     private final float maxPitchStep = 15f;     // Максимальный шаг pitch
     private final float pitchAccelerate = 5f;  // Ускорение pitch
-    private final float attackCooldown = 0.85f; // Атака при 90% кулдауна
+    private final float attackCooldown = 0.8f; // Атака при 80% кулдауна
     private final float attackBaseTime = 0f;   // Без базовой задержки
     private final int attackTickLimit = 0;     // Без лимита тиков (используем кулдаун)
 
@@ -448,12 +448,8 @@ public class Aura extends Module {
         if (!mc.options.jumpKey.isPressed() && isAboveWater())
             return true;
 
-        // я хз почему оно не критует когда фд больше 1.14
-        if (mc.player.fallDistance > 1 && mc.player.fallDistance < 1.14)
-            return false;
-
         if (!reasonForSkipCrit)
-            return !mc.player.isOnGround() && mc.player.fallDistance > 0.0f;
+            return !mc.player.isOnGround() && mc.player.fallDistance > 0.0f && mc.player.fallDistance < 0.76f;
         return true;
     }
 
