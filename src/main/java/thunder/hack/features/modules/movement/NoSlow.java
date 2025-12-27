@@ -20,7 +20,7 @@ public class NoSlow extends Module {
 
     public final Setting<Mode> mode = new Setting<>("Mode", Mode.NCP);
     private final Setting<Boolean> mainHand = new Setting<>("MainHand", true);
-    private final Setting<SettingGroup> selection = new Setting<>("Selection", new SettingGroup(false, 0));
+    private final Setting<SettingGroup> selection = new Setting<>("Selection", new SettingGroup(true, 0));
     private final Setting<Boolean> food = new Setting<>("Food", true).addToGroup(selection);
     private final Setting<Boolean> projectiles = new Setting<>("Projectiles", true).addToGroup(selection);
     private final Setting<Boolean> shield = new Setting<>("Shield", true).addToGroup(selection);

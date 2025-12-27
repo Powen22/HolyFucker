@@ -34,8 +34,9 @@ public class BooleanComponent extends SettingElement {
 
     @Override
     public void mouseClicked(int mouseX, int mouseY, int button) {
-        if (button == 0 && Render2DEngine.isHovered(mouseX, mouseY, x + width - 18, y + height / 2 - 4, 15, 8)) {
-            setting.setValue(!((Boolean) setting.getValue()));
+        if ((getY() > ThunderGui.getInstance().main_posY + ThunderGui.getInstance().height) || getY() < ThunderGui.getInstance().main_posY) {
+            return;
         }
+        if (isHovered()) setting.setValue(!((Boolean) setting.getValue()));
     }
 }

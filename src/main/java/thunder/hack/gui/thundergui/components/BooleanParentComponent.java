@@ -37,13 +37,10 @@ public class BooleanParentComponent extends SettingElement {
 
     @Override
     public void mouseClicked(int mouseX, int mouseY, int button) {
-        if (button == 0 && Render2DEngine.isHovered(mouseX, mouseY, x + width - 18, y + height / 2 - 4, 15, 8)) {
-            // Левая кнопка - переключение включено/выключено
-            getParentSetting().getValue().setEnabled(!getParentSetting().getValue().isEnabled());
-        } else if (button == 1 && Render2DEngine.isHovered(mouseX, mouseY, x, y, width, height)) {
-            // Правая кнопка - раскрытие/сворачивание
-            getParentSetting().getValue().setExtended(!getParentSetting().getValue().isExtended());
+        if ((getY() > ThunderGui.getInstance().main_posY + ThunderGui.getInstance().height) || getY() < ThunderGui.getInstance().main_posY) {
+            return;
         }
+        if (isHovered()) getParentSetting().getValue().setEnabled(!getParentSetting().getValue().isEnabled());
     }
 
     public Setting<BooleanSettingGroup> getParentSetting() {

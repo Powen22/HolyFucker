@@ -79,7 +79,7 @@ public class Aura extends Module {
     public final Setting<Boolean> clientLook = new Setting<>("ClientLook", false);
 
     public final Setting<ESP> esp = new Setting<>("ESP", ESP.ThunderHack);
-    public final Setting<SettingGroup> espGroup = new Setting<>("ESPSettings", new SettingGroup(false, 0), v -> esp.is(ESP.ThunderHackV2));
+    public final Setting<SettingGroup> espGroup = new Setting<>("ESPSettings", new SettingGroup(true, 0), v -> esp.is(ESP.ThunderHackV2));
     public final Setting<Integer> espLength = new Setting<>("ESPLength", 14, 1, 40, v -> esp.is(ESP.ThunderHackV2)).addToGroup(espGroup);
     public final Setting<Integer> espFactor = new Setting<>("ESPFactor", 8, 1, 20, v -> esp.is(ESP.ThunderHackV2)).addToGroup(espGroup);
     public final Setting<Float> espShaking = new Setting<>("ESPShaking", 1.8f, 1.5f, 10f, v -> esp.is(ESP.ThunderHackV2)).addToGroup(espGroup);

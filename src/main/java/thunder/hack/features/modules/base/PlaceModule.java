@@ -43,7 +43,7 @@ public abstract class PlaceModule extends Module {
     protected final Setting<InteractMode> breakCrystalMode = new Setting<>("Break Mode", InteractMode.Normal).addToGroup(crystalBreaker);
     protected final Setting<Boolean> antiWeakness = new Setting<>("Anti Weakness", false).addToGroup(crystalBreaker);
 
-    protected final Setting<SettingGroup> blocks = new Setting<>("Blocks", new SettingGroup(false, 0));
+    protected final Setting<SettingGroup> blocks = new Setting<>("Blocks", new SettingGroup(true, 0));
     protected final Setting<Boolean> obsidian = new Setting<>("Obsidian", true).addToGroup(blocks);
     protected final Setting<Boolean> anchor = new Setting<>("Anchor", false).addToGroup(blocks);
     protected final Setting<Boolean> enderChest = new Setting<>("EnderChest", true).addToGroup(blocks);
@@ -52,7 +52,7 @@ public abstract class PlaceModule extends Module {
     protected final Setting<Boolean> dirt = new Setting<>("Dirt", false).addToGroup(blocks);
     protected final Setting<Boolean> oakPlanks = new Setting<>("OakPlanks", false).addToGroup(blocks);
 
-    protected final Setting<SettingGroup> pause = new Setting<>("Pause", new SettingGroup(false, 0));
+    protected final Setting<SettingGroup> pause = new Setting<>("Pause", new SettingGroup(true, 0));
     protected final Setting<Boolean> eatPause = new Setting<>("On Eat", false).addToGroup(pause);
     protected final Setting<Boolean> breakPause = new Setting<>("On Break", false).addToGroup(pause);
 

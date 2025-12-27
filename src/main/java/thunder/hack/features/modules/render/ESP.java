@@ -60,7 +60,7 @@ public class ESP extends Module {
     private final Setting<Boolean> dizorentRadius = new Setting<>("DizorentRadius", true);
     private final Setting<ColorSetting> dizorentColor = new Setting<>("DizorentColor", new ColorSetting(new Color(0xB300F1CC, true)), v -> dizorentRadius.getValue());
 
-    private final Setting<SettingGroup> boxEsp = new Setting<>("Box", new SettingGroup(false, 0));
+    private final Setting<SettingGroup> boxEsp = new Setting<>("Box", new SettingGroup(true, 0));
     private final Setting<Boolean> players = new Setting<>("Players", true).addToGroup(boxEsp);
     private final Setting<Boolean> friends = new Setting<>("Friends", true).addToGroup(boxEsp);
     private final Setting<Boolean> crystals = new Setting<>("Crystals", true).addToGroup(boxEsp);
@@ -72,7 +72,7 @@ public class ESP extends Module {
     private final Setting<Colors> colorMode = new Setting<>("ColorMode", Colors.SyncColor).addToGroup(boxEsp);
     private final Setting<Boolean> renderHealth = new Setting<>("renderHealth", true).addToGroup(boxEsp);
 
-    private final Setting<SettingGroup> boxColors = new Setting<>("BoxColors", new SettingGroup(false, 0));
+    private final Setting<SettingGroup> boxColors = new Setting<>("BoxColors", new SettingGroup(true, 0));
     private final Setting<ColorSetting> playersC = new Setting<>("PlayersC", new ColorSetting(new Color(0xFF9200))).addToGroup(boxColors);
     private final Setting<ColorSetting> friendsC = new Setting<>("FriendsC", new ColorSetting(new Color(0x30FF00))).addToGroup(boxColors);
     private final Setting<ColorSetting> crystalsC = new Setting<>("CrystalsC", new ColorSetting(new Color(0x00BBFF))).addToGroup(boxColors);

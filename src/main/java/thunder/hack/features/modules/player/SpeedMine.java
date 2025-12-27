@@ -69,7 +69,7 @@ public final class SpeedMine extends Module {
     private final Setting<Boolean> pauseEat = new Setting<>("Pause On Eat", false);
     private final Setting<Boolean> clientRemove = new Setting<>("ClientRemove", true);
 
-    private final Setting<SettingGroup> packets = new Setting<>("Packets", new SettingGroup(false, 0), v -> mode.is(Mode.Packet) && !doubleMine.getValue());
+    private final Setting<SettingGroup> packets = new Setting<>("Packets", new SettingGroup(true, 0), v -> mode.is(Mode.Packet) && !doubleMine.getValue());
     private final Setting<Boolean> stop = new Setting<>("Stop", true, v -> mode.is(Mode.Packet) && !doubleMine.getValue()).addToGroup(packets);
     private final Setting<Boolean> abort = new Setting<>("Abort", true, v -> mode.is(Mode.Packet) && !doubleMine.getValue()).addToGroup(packets);
     private final Setting<Boolean> start = new Setting<>("Start", true, v -> mode.is(Mode.Packet) && !doubleMine.getValue()).addToGroup(packets);

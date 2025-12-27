@@ -5,7 +5,7 @@ public class BooleanSettingGroup {
 
     public BooleanSettingGroup(boolean enabled) {
         this.enabled = enabled;
-        extended = false;
+        extended = true;
     }
 
     public boolean isExtended() {

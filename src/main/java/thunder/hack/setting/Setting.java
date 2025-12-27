@@ -204,13 +204,17 @@ public class Setting<T> {
 
     public boolean isVisible() {
         if (group != null) {
-            if (group.getValue() instanceof BooleanSettingGroup bp)
-                if (!bp.isExtended())
+            if (group.getValue() instanceof BooleanSettingGroup bp) {
+                // Для BooleanSettingGroup дочерние настройки видны только если группа включена И раскрыта
+                if (!bp.isEnabled() || !bp.isExtended())
                     return false;
+            }
 
-            if (group.getValue() instanceof SettingGroup p)
+            if (group.getValue() instanceof SettingGroup p) {
+                // Для SettingGroup дочерние настройки видны только если группа раскрыта
                 if (!p.isExtended())
                     return false;
+            }
         }
 
         if (visibility == null)

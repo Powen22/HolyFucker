@@ -28,11 +28,13 @@ public class SettingElement {
     }
 
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
-        hovered = Render2DEngine.isHovered(mouseX, mouseY, x, y, width, height);
+        // Обновляем y перед проверкой hover, чтобы использовать актуальные координаты
         if (scroll_offsetY != y) {
             scroll_animation = AnimationUtility.fast(scroll_animation, 1, 5f);
             y = (int) Render2DEngine.interpolate(prev_offsetY, scroll_offsetY, scroll_animation);
         }
+        // Проверяем hover используя актуальные координаты
+        hovered = Render2DEngine.isHovered(mouseX, mouseY, x, y, width, height);
     }
 
     public void init() {

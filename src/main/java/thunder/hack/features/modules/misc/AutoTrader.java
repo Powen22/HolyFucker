@@ -32,7 +32,7 @@ public class AutoTrader extends Module {
     private final Setting<String> buyItem = new Setting<>("BuyItem", "apple").addToGroup(buy);
     private final Setting<BooleanSettingGroup> sell = new Setting<>("Sell", new BooleanSettingGroup(false));
     private final Setting<String> sellItem = new Setting<>("SellItem", "bread").addToGroup(sell);
-    private final Setting<SettingGroup> disable = new Setting<>("Disable", new SettingGroup(false, 0));
+    private final Setting<SettingGroup> disable = new Setting<>("Disable", new SettingGroup(true, 0));
     private final Setting<Boolean> noVillagers = new Setting<>("NoVillagers", true).addToGroup(disable);
     private final Setting<Boolean> noItems = new Setting<>("NoItems", false).addToGroup(disable);
 
