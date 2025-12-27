@@ -101,7 +101,7 @@ public class Aura extends Module {
     public final Setting<Boolean> hurtTimeCheck = new Setting<>("HurtTimeCheck", true).addToGroup(advanced);
     public final Setting<AttackHand> attackHand = new Setting<>("AttackHand", AttackHand.MainHand).addToGroup(advanced);
     public final Setting<Resolver> resolver = new Setting<>("Resolver", Resolver.Advantage).addToGroup(advanced);
-    public final Setting<Integer> backTicks = new Setting<>("BackTicks", 4, 1, 20, v -> resolver.is(Resolver.BackTrack)).addToGroup(advanced);
+    public final Setting<Integer> backTicks = new Setting<>("BackTicks", 2, 1, 20, v -> resolver.is(Resolver.BackTrack)).addToGroup(advanced);
     public final Setting<Boolean> resolverVisualisation = new Setting<>("ResolverVisualisation", false, v -> !resolver.is(Resolver.Off)).addToGroup(advanced);
     public final Setting<AccelerateOnHit> accelerateOnHit = new Setting<>("AccelerateOnHit", AccelerateOnHit.Off).addToGroup(advanced);
     
@@ -110,7 +110,7 @@ public class Aura extends Module {
     private final int maxYawStep = 100;     // Максимальный шаг поворота по yaw  
     private final float aimedPitchStep = 2f;    // Шаг pitch когда целимся
     private final float maxPitchStep = 15f;     // Максимальный шаг pitch
-    private final float pitchAccelerate = 2f;  // Ускорение pitch
+    private final float pitchAccelerate = 5f;  // Ускорение pitch
     private final float attackCooldown = 0.85f; // Атака при 90% кулдауна
     private final float attackBaseTime = 0f;   // Без базовой задержки
     private final int attackTickLimit = 0;     // Без лимита тиков (используем кулдаун)

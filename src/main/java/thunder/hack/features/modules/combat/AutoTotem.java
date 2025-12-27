@@ -83,7 +83,7 @@ public final class AutoTotem extends Module {
 
     private enum Mode {Default, Alternative, Matrix, MatrixPick, NewVersion}
 
-    private enum Swap {GappleShield, BallShield, GappleBall, BallTotem}
+    private enum Swap {GappleShield, BallShield, GappleBall, BallTotem, TotemTotem}
 
     public enum RCGap {Off, Always, OnlySafe}
 
@@ -94,6 +94,7 @@ public final class AutoTotem extends Module {
     private boolean bindWasPressed = false; // Track if bind was released before next press
     private Item itemBeforeTotem = null; // Предмет который был до тотема
     private boolean totemWasPlaced = false; // Флаг что тотем был положен в оффхенд
+    private boolean totemTotemSwapDone = false; // Флаг что свап TotemTotem уже выполнен за это нажатие бинда
 
     public AutoTotem() {
         super("AutoTotem", Category.COMBAT);
@@ -222,9 +223,86 @@ public final class AutoTotem extends Module {
         }
         return -1;
     }
+    
+    // Находит слот другого тотема (не того, что в оффхенде) для свапа TotemTotem
+    private int findOtherTotemSlot() {
+        ItemStack offhandStack = mc.player.getOffHandStack();
+        boolean offhandEnchanted = isEnchanted(offhandStack);
+        
+        int bestSlot = -1;
+        boolean bestEnchanted = false;
+        
+        // Если в оффхенде незачарованный тотем, приоритизируем зачарованный
+        // Если в оффхенде зачарованный, ищем незачарованный (если saveEnchantedTotem выключен)
+        
+        // Сначала проверяем инвентарь (9-35)
+        for (int i = 9; i < 36; i++) {
+            ItemStack stack = mc.player.getInventory().getStack(i);
+            if (stack.getItem() == Items.TOTEM_OF_UNDYING) {
+                boolean stackEnchanted = isEnchanted(stack);
+                
+                // Если в оффхенде незачарованный, а в инвентаре зачарованный - это лучший вариант
+                if (!offhandEnchanted && stackEnchanted) {
+                    return i; // Сразу возвращаем зачарованный тотем
+                }
+                
+                // Если в оффхенде зачарованный, ищем незачарованный (если saveEnchantedTotem выключен)
+                if (offhandEnchanted && !stackEnchanted && !saveEnchantedTotem.getValue()) {
+                    return i; // Сразу возвращаем незачарованный тотем
+                }
+                
+                // Если saveEnchantedTotem включен и тотем зачарованный, пропускаем
+                if (saveEnchantedTotem.getValue() && stackEnchanted) {
+                    continue;
+                }
+                
+                // Сохраняем первый найденный тотем как запасной вариант
+                if (bestSlot == -1) {
+                    bestSlot = i;
+                    bestEnchanted = stackEnchanted;
+                }
+            }
+        }
+        
+        // Потом хотбар (0-8)
+        for (int i = 0; i < 9; i++) {
+            ItemStack stack = mc.player.getInventory().getStack(i);
+            if (stack.getItem() == Items.TOTEM_OF_UNDYING) {
+                boolean stackEnchanted = isEnchanted(stack);
+                
+                // Если в оффхенде незачарованный, а в инвентаре зачарованный - это лучший вариант
+                if (!offhandEnchanted && stackEnchanted) {
+                    return i; // Сразу возвращаем зачарованный тотем
+                }
+                
+                // Если в оффхенде зачарованный, ищем незачарованный (если saveEnchantedTotem выключен)
+                if (offhandEnchanted && !stackEnchanted && !saveEnchantedTotem.getValue()) {
+                    return i; // Сразу возвращаем незачарованный тотем
+                }
+                
+                // Если saveEnchantedTotem включен и тотем зачарованный, пропускаем
+                if (saveEnchantedTotem.getValue() && stackEnchanted) {
+                    continue;
+                }
+                
+                // Сохраняем первый найденный тотем как запасной вариант
+                if (bestSlot == -1) {
+                    bestSlot = i;
+                    bestEnchanted = stackEnchanted;
+                }
+            }
+        }
+        
+        return bestSlot;
+    }
 
     public void swapTo(int slot) {
         if (slot != -1 && delay <= 0) {
+            // Если это свап TotemTotem по бинду, устанавливаем флаг после успешного свапа
+            if (bindSwap.getValue().isEnabled() && swapMode.getValue() == Swap.TotemTotem 
+                    && mc.player.getOffHandStack().getItem() == Items.TOTEM_OF_UNDYING) {
+                totemTotemSwapDone = true;
+            }
             // Block when container is open, unless GuiMove is enabled
             if (mc.currentScreen instanceof GenericContainerScreen && !ModuleManager.guiMove.isEnabled()) return;
 
@@ -332,6 +410,10 @@ public final class AutoTotem extends Module {
                 if (bindSwap.getValue().isEnabled()) {
                     boolean bindCurrentlyPressed = isKeyPressed(swapButton);
                     boolean shouldTrigger = bindCurrentlyPressed && !bindWasPressed;
+                    if (!bindCurrentlyPressed && bindWasPressed) {
+                        // Бинд отпущен - сбрасываем флаг свапа
+                        totemTotemSwapDone = false;
+                    }
                     bindWasPressed = bindCurrentlyPressed;
                     
                     if (shouldTrigger) {
@@ -369,6 +451,32 @@ public final class AutoTotem extends Module {
                             }
                                 } else {
                                     item = Items.PLAYER_HEAD;
+                                }
+                            }
+                            case TotemTotem -> {
+                                // Свап Totem на Totem: если в оффхенде тотем, свапаем на другой тотем из инвентаря
+                                boolean hasTotemInOffhand = offHandItem == Items.TOTEM_OF_UNDYING;
+                                if (hasTotemInOffhand && ignoreUnenchantedTotem.getValue() && !isEnchanted(mc.player.getOffHandStack())) {
+                                    // Если в оффхенде незачарованный тотем и включен ignoreUnenchantedTotem, считаем что тотема нет
+                                    hasTotemInOffhand = false;
+                                }
+                                
+                                if (mc.player.getOffHandStack().isEmpty() || !hasTotemInOffhand) {
+                                    // Если оффхенд пуст или нет тотема - свапаем на тотем
+                                    if (ignoreUnenchantedTotem.getValue() && !hasEnchantedTotem()) {
+                                        item = null; // Нет зачарованного тотема
+                                    } else {
+                                        item = Items.TOTEM_OF_UNDYING;
+                                    }
+                                } else {
+                                    // Если в оффхенде тотем - свапаем на другой тотем из инвентаря
+                                    // Проверяем, есть ли другой тотем в инвентаре (не тот, что в оффхенде)
+                                    int otherTotemSlot = findOtherTotemSlot();
+                                    if (otherTotemSlot != -1) {
+                                        item = Items.TOTEM_OF_UNDYING;
+                                    } else {
+                                        item = null; // Нет другого тотема для свапа
+                                    }
                                 }
                             }
                         }
@@ -523,6 +631,100 @@ public final class AutoTotem extends Module {
             }
         }
 
+        // Свап Totem на Totem: если в оффхенде тотем, ищем лучший в инвентаре
+        // Отключаем автоматический свап если используется режим TotemTotem по бинду
+        boolean isTotemTotemMode = bindSwap.getValue().isEnabled() && swapMode.getValue() == Swap.TotemTotem;
+        if (offHandItem == Items.TOTEM_OF_UNDYING && !skipSafetyTotemOverride && !bindSwapPressed && !isTotemTotemMode) {
+            ItemStack offhandTotem = mc.player.getOffHandStack();
+            boolean offhandTotemEnchanted = isEnchanted(offhandTotem);
+            
+            // Ищем лучший тотем в инвентаре
+            int bestTotemSlot = -1;
+            boolean bestTotemEnchanted = false;
+            
+            // Сначала проверяем инвентарь (9-35)
+            for (int i = 9; i < 36; i++) {
+                ItemStack stack = mc.player.getInventory().getStack(i);
+                if (stack.getItem() == Items.TOTEM_OF_UNDYING) {
+                    boolean stackEnchanted = isEnchanted(stack);
+                    
+                    // Пропускаем зачарованные тотемы если включено сохранение
+                    if (saveEnchantedTotem.getValue() && stackEnchanted) {
+                        continue;
+                    }
+                    
+                    // Выбираем лучший тотем:
+                    // 1. Зачарованный лучше обычного (если saveEnchantedTotem выключен)
+                    // 2. Если оба зачарованные или оба обычные - берем первый найденный
+                    if (bestTotemSlot == -1) {
+                        bestTotemSlot = i;
+                        bestTotemEnchanted = stackEnchanted;
+                    } else if (!saveEnchantedTotem.getValue()) {
+                        // Если нашли зачарованный, а текущий лучший обычный - заменяем
+                        if (stackEnchanted && !bestTotemEnchanted) {
+                            bestTotemSlot = i;
+                            bestTotemEnchanted = true;
+                        }
+                    }
+                }
+            }
+            
+            // Если не нашли в инвентаре, проверяем хотбар (0-8)
+            if (bestTotemSlot == -1) {
+                for (int i = 0; i < 9; i++) {
+                    ItemStack stack = mc.player.getInventory().getStack(i);
+                    if (stack.getItem() == Items.TOTEM_OF_UNDYING) {
+                        boolean stackEnchanted = isEnchanted(stack);
+                        
+                        // Пропускаем зачарованные тотемы если включено сохранение
+                        if (saveEnchantedTotem.getValue() && stackEnchanted) {
+                            continue;
+                        }
+                        
+                        if (bestTotemSlot == -1) {
+                            bestTotemSlot = i;
+                            bestTotemEnchanted = stackEnchanted;
+                        } else if (!saveEnchantedTotem.getValue()) {
+                            if (stackEnchanted && !bestTotemEnchanted) {
+                                bestTotemSlot = i;
+                                bestTotemEnchanted = true;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Если нашли лучший тотем, используем его
+            if (bestTotemSlot != -1) {
+                // Заменяем только если новый тотем лучше текущего
+                // (зачарованный лучше обычного, если saveEnchantedTotem выключен)
+                boolean shouldSwap = false;
+                if (!saveEnchantedTotem.getValue()) {
+                    // Заменяем если нашли зачарованный, а в оффхенде обычный
+                    shouldSwap = bestTotemEnchanted && !offhandTotemEnchanted;
+                } else {
+                    // Если saveEnchantedTotem включен, заменяем только если нашли другой тотем
+                    // (не тот же самый)
+                    shouldSwap = true; // Всегда заменяем на другой тотем из инвентаря
+                }
+                
+                if (shouldSwap) {
+                    // Устанавливаем item и itemSlot для свапа
+                    item = Items.TOTEM_OF_UNDYING;
+                    itemSlot = bestTotemSlot;
+                    // Сохраняем предмет который был до тотема для восстановления после попа
+                    if (offHandItem != Items.TOTEM_OF_UNDYING) {
+                        if (offHandItem != Items.AIR && !mc.player.getOffHandStack().isEmpty()) {
+                            itemBeforeTotem = offHandItem;
+                        }
+                        totemWasPlaced = true;
+                    }
+                    // Возвращаем слот сразу, пропуская дальнейшие проверки
+                    return itemSlot;
+                }
+            }
+        }
+        
         // Check if item is already in offhand or mainhand being used
         if (item == null) return -1;
         
@@ -531,13 +733,40 @@ public final class AutoTotem extends Module {
         boolean itemAlreadyInOffhand = (item == Items.PLAYER_HEAD && isSkullItem(offhandItemCurrent)) 
                 || offhandItemCurrent == item;
         
-        if (itemAlreadyInOffhand) {
+        // Если это свап TotemTotem по бинду и в оффхенде уже тотем - не свапаем повторно
+        // (свап должен происходить только один раз при нажатии бинда)
+        boolean isTotemTotemBindSwap = bindSwapPressed && swapMode.getValue() == Swap.TotemTotem 
+                && item == Items.TOTEM_OF_UNDYING;
+        
+        // Если itemSlot уже установлен для свапа Totem на Totem, пропускаем проверку itemAlreadyInOffhand
+        boolean isTotemToTotemSwap = item == Items.TOTEM_OF_UNDYING 
+                && offHandItem == Items.TOTEM_OF_UNDYING 
+                && itemSlot != -1;
+        
+        // Для TotemTotem по бинду: если в оффхенде уже тотем, проверяем есть ли другой тотем
+        // И свап еще не был выполнен за это нажатие бинда
+        if (isTotemTotemBindSwap && offhandItemCurrent == Items.TOTEM_OF_UNDYING && !totemTotemSwapDone) {
+            // Проверяем, есть ли другой тотем в инвентаре для свапа
+            int otherTotemSlot = findOtherTotemSlot();
+            if (otherTotemSlot == -1) {
+                // Нет другого тотема - не свапаем
+                return -1;
+            }
+            // Есть другой тотем - продолжаем свап (пропускаем проверку itemAlreadyInOffhand)
+            // itemSlot будет установлен ниже в коде при поиске слота
+        } else if (isTotemTotemBindSwap && totemTotemSwapDone) {
+            // Свап уже выполнен за это нажатие бинда - не свапаем повторно
+            return -1;
+        }
+        
+        if (itemAlreadyInOffhand && !isTotemToTotemSwap && !isTotemTotemBindSwap) {
             // If ignoring unenchanted totems on bind swap, check if current offhand totem is enchanted
             if (!(item == Items.TOTEM_OF_UNDYING && bindSwapPressed && ignoreUnenchantedTotem.getValue() 
                     && !isEnchanted(mc.player.getOffHandStack()))) {
                 return -1;
             }
         }
+        
         if (item == mc.player.getMainHandStack().getItem() && mc.options.useKey.isPressed()) return -1;
 
         // Check if we need to filter for enchanted totems only
