@@ -49,10 +49,9 @@ public class TargetHud extends HudElement {
     private final Setting<HPmodeEn> hpMode = new Setting<>("HP Mode", HPmodeEn.HP);
     private final Setting<ImageModeEn> imageMode = new Setting<>("Image", ImageModeEn.Anime);
     private final Setting<ModeEn> Mode = new Setting<>("Mode", ModeEn.HolyFacker);
-    private final Setting<ColorSetting> color = new Setting<>("Color1", new ColorSetting(-16492289), v -> Mode.getValue() == ModeEn.CelkaPasta);
-    private final Setting<ColorSetting> color2 = new Setting<>("Color2", new ColorSetting(-16492289), v -> Mode.getValue() == ModeEn.CelkaPasta);
+    private final Setting<ColorSetting> color = new Setting<>("Color1", new ColorSetting(-16492289), v -> Mode.is(ModeEn.CelkaPasta));
+    private final Setting<ColorSetting> color2 = new Setting<>("Color2", new ColorSetting(-16492289), v -> Mode.is(ModeEn.CelkaPasta));
     private final Setting<Boolean> funTimeHP = new Setting<>("FunTimeHP", false);
-    private final Setting<Boolean> mini = new Setting<>("Mini", false, v -> Mode.getValue() == ModeEn.NurikZapen);
     private final Setting<Boolean> absorp = new Setting<>("Absorption", true);
 
     private static Identifier custom;
@@ -107,7 +106,7 @@ public class TargetHud extends HudElement {
         context.getMatrices().push();
 
         if (!HudEditor.hudStyle.is(HudEditor.HudStyle.Blurry)) {
-            if (Mode.is(ModeEn.NurikZapen) && mini.getValue())
+            if (Mode.is(ModeEn.NurikZapen))
                 sizeAnimation(context.getMatrices(), getPosX() + 45 + animX.getValue(), getPosY() + 15 + animY.getValue(), animation.getAnimationd());
             else if (Mode.is(ModeEn.Starter))
                 sizeAnimation(context.getMatrices(), getPosX() + 47 + animX.getValue(), getPosY() + 17 + animY.getValue(), animation.getAnimationd());
@@ -120,12 +119,7 @@ public class TargetHud extends HudElement {
             switch (Mode.getValue()) {
                 case HolyFacker -> renderHolyFacker(context, health, animationFactor);
                 case CelkaPasta -> renderCelkaPasta(context, health);
-                case NurikZapen -> {
-                    if (mini.getValue())
-                        renderMiniNurik(context, health, animationFactor);
-                    else
-                        renderNurik(context, health, animationFactor);
-                }
+                case NurikZapen -> renderMiniNurik(context, health, animationFactor);
                 case Starter -> renderStarter(context, health, animationFactor);
             }
         }

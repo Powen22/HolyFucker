@@ -186,11 +186,11 @@ public class Aura extends Module {
         boolean readyForAttack;
 
         if (grimRayTrace.getValue()) {
-            readyForAttack = autoCrit() && (lookingAtHitbox || skipRayTraceCheck());
             calcRotations(autoCrit());
+            readyForAttack = autoCrit() && (lookingAtHitbox || skipRayTraceCheck() || isTargetInSimpleRange());
         } else {
             calcRotations(autoCrit());
-            readyForAttack = autoCrit() && (lookingAtHitbox || skipRayTraceCheck());
+            readyForAttack = autoCrit() && (lookingAtHitbox || skipRayTraceCheck() || isTargetInSimpleRange());
         }
 
         if (readyForAttack) {
@@ -222,6 +222,13 @@ public class Aura extends Module {
                 || rotationMode.is(Mode.Grim)
                 || (rotationMode.is(Mode.Interact) && (interactTicks.getValue() <= 1
                 || mc.world.getBlockCollisions(mc.player, mc.player.getBoundingBox().expand(-0.25, 0.0, -0.25).offset(0.0, 1, 0.0)).iterator().hasNext()));
+    }
+    
+    private boolean isTargetInSimpleRange() {
+        if (target == null) return false;
+        // Простая проверка дистанции без проверки видимости для неподвижных таргетов
+        double distSq = mc.player.squaredDistanceTo(target.getPos());
+        return distSq <= (getRange() + aimRange.getValue()) * (getRange() + aimRange.getValue());
     }
 
     public void attack() {
@@ -669,6 +676,11 @@ public class Aura extends Module {
             if (Objects.requireNonNull(wallsBypass.getValue()) == WallsBypass.V1) {
                 return target.getPos().add(random(-0.15, 0.15), lenghtY, random(-0.15, 0.15));
             }
+        } else {
+            // Если таргет видим, но rotationPoint не установлен или равен нулю, устанавливаем его в центр
+            if (rotationPoint.equals(Vec3d.ZERO)) {
+                rotationPoint = new Vec3d(random(-0.1f, 0.1f), target.getEyeHeight(target.getPose()) / 2f, random(-0.1f, 0.1f));
+            }
         }
 
         float[] rotation;
@@ -745,29 +757,17 @@ public class Aura extends Module {
             new Vec3d(targetBox.maxX, targetBox.minY + target.getHeight() / 2.0, targetBox.minZ),
         };
         
+        // Проверяем только дистанцию, без проверки видимости
         for (Vec3d point : checkPoints) {
             double pointDistSq = eyePos.squaredDistanceTo(point);
             if (pointDistSq <= maxRangeSq) {
-                // В пределах дистанции - проверяем видимость если нужно
-                if (getWallRange() > 0 || rayTrace.getValue() == RayTrace.OFF) {
-                    return true;
-                }
-                float[] rotation = Managers.PLAYER.calcAngle(point);
-                if (Managers.PLAYER.checkRtx(rotation[0], rotation[1], getRange(), getWallRange(), rayTrace.getValue())) {
-                    return true;
-                }
+                return true;
             }
         }
         
-        // Дополнительная проверка: проверяем ближайшую точку хитбокса (уже вычислена выше)
+        // Дополнительная проверка: проверяем ближайшую точку хитбокса
         if (closestDistSq <= maxRangeSq) {
-            if (getWallRange() > 0 || rayTrace.getValue() == RayTrace.OFF) {
-                return true;
-            }
-            float[] rotation = Managers.PLAYER.calcAngle(closestPoint);
-            if (Managers.PLAYER.checkRtx(rotation[0], rotation[1], getRange(), getWallRange(), rayTrace.getValue())) {
-                return true;
-            }
+            return true;
         }
         
         return false;
@@ -835,9 +835,23 @@ public class Aura extends Module {
         // Улучшенная проверка FOV: проверяем центр хитбокса и глаза, а не только позицию
         Vec3d centerPos = ent.getPos().add(0, ent.getHeight() / 2.0, 0);
         Vec3d eyePos = ent.getPos().add(0, ent.getEyeHeight(ent.getPose()), 0);
+        
+        // Для очень близких таргетов (в пределах 2 блоков) делаем проверку FOV более мягкой
+        double distSq = mc.player.squaredDistanceTo(ent.getPos());
+        boolean isVeryClose = distSq <= 4.0; // 2 блока в квадрате
+        
         boolean inFOV = InteractionUtility.isVecInFOV(centerPos, fov.getValue()) 
                      || InteractionUtility.isVecInFOV(eyePos, fov.getValue())
                      || InteractionUtility.isVecInFOV(ent.getPos(), fov.getValue());
+        
+        // Для очень близких таргетов увеличиваем FOV на 30 градусов
+        if (!inFOV && !isVeryClose) {
+            int extendedFOV = fov.getValue() + 30;
+            inFOV = InteractionUtility.isVecInFOV(centerPos, extendedFOV) 
+                 || InteractionUtility.isVecInFOV(eyePos, extendedFOV)
+                 || InteractionUtility.isVecInFOV(ent.getPos(), extendedFOV);
+        }
+        
         if (!inFOV) return true;
 
         if (entity instanceof PlayerEntity player) {
