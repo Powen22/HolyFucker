@@ -111,10 +111,9 @@ public class Aura extends Module {
     private final float aimedPitchStep = 2f;    // Шаг pitch когда целимся
     private final float maxPitchStep = 15f;     // Максимальный шаг pitch
     private final float pitchAccelerate = 2f;  // Ускорение pitch
-    private final float attackCooldown = 0.85f; // Атака при 90% кулдауна
+    private final float attackCooldown = 0.8f; // Атака при 90% кулдауна
     private final float attackBaseTime = 0f;   // Без базовой задержки
     private final int attackTickLimit = 0;     // Без лимита тиков (используем кулдаун)
-    private final float critFallDistance = 0.03f; // Минимальная дистанция падения для крита
 
 
     /*   TARGETS   */
@@ -237,35 +236,14 @@ public class Aura extends Module {
         if (blocking && unpressShield.getValue())
             sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.RELEASE_USE_ITEM, BlockPos.ORIGIN, Direction.DOWN));
 
-        boolean sprint = Core.serverSprint || mc.player.isSprinting();
-        
-        // Сброс спринта для гарантии крита
-        // Криты не работают при активном спринте
-        if (sprint && dropSprint.getValue() && canCrit())
+        boolean sprint = Core.serverSprint;
+        if (sprint && dropSprint.getValue())
             disableSprint();
 
         if (rotationMode.is(Mode.Grim))
             sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), rotationYaw, rotationPitch, mc.player.isOnGround()));
 
         return new boolean[]{blocking, sprint};
-    }
-
-    /**
-     * Проверяет, будет ли крит при текущих условиях
-     */
-    private boolean canCrit() {
-        if (!smartCrit.getValue().isEnabled()) return false;
-        if (mc.player.getAbilities().flying) return false;
-        if (mc.player.isFallFlying()) return false;
-        if (mc.player.hasStatusEffect(StatusEffects.BLINDNESS)) return false;
-        if (mc.player.hasStatusEffect(StatusEffects.SLOW_FALLING)) return false;
-        if (mc.player.isInLava() || mc.player.isSubmergedInWater()) return false;
-        if (mc.player.isOnGround()) return false;
-        if (mc.player.isClimbing()) return false;
-        if (Managers.PLAYER.isInWeb()) return false;
-        
-        // Крит если падаем
-        return mc.player.getVelocity().y < 0 || mc.player.fallDistance > critFallDistance;
     }
 
     public void postAttack(boolean block, boolean sprint) {
@@ -393,12 +371,15 @@ public class Aura extends Module {
         delayTimer.reset();
     }
 
-    /**
-     * Логика определения готовности к удару/криту.
-     * Криты в Minecraft требуют: !onGround && velocity.y < 0 && !sprinting && !blind && !inWater
-     */
     private boolean autoCrit() {
-        // Проверка тайминга атаки
+        boolean reasonForSkipCrit =
+                !smartCrit.getValue().isEnabled()
+                        || mc.player.getAbilities().flying
+                        || mc.player.isFallFlying()
+                        || mc.player.hasStatusEffect(StatusEffects.BLINDNESS)
+                        || mc.player.hasStatusEffect(StatusEffects.SLOW_FALLING)
+                        || Managers.PLAYER.isInWeb();
+
         if (hitTicks > 0)
             return false;
 
@@ -408,56 +389,28 @@ public class Aura extends Module {
         if (getAttackCooldown() < attackCooldown)
             return false;
 
-        // Проверка hurtTime таргета - не бьём неуязвимого
-        if (hurtTimeCheck.getValue() && target instanceof LivingEntity livingTarget) {
-            if (livingTarget.hurtTime > 0)
-            return false;
-        }
-
-        // Grim Criticals сам обрабатывает криты
         if (ModuleManager.criticals.isEnabled() && ModuleManager.criticals.mode.is(Criticals.Mode.Grim))
             return true;
 
-        // SmartCrit выключен - бьём всегда когда кулдаун готов
-        if (!smartCrit.getValue().isEnabled())
+        boolean mergeWithTargetStrafe = !ModuleManager.targetStrafe.isEnabled() || !ModuleManager.targetStrafe.jump.getValue();
+        boolean mergeWithSpeed = !ModuleManager.speed.isEnabled() || mc.player.isOnGround();
+
+        if (!mc.options.jumpKey.isPressed() && mergeWithTargetStrafe && mergeWithSpeed && !onlySpace.getValue() && !autoJump.getValue())
             return true;
 
-        // Ситуации когда криты невозможны - бьём без крита
-        if (mc.player.getAbilities().flying 
-                || mc.player.isFallFlying()
-                || mc.player.hasStatusEffect(StatusEffects.BLINDNESS)
-                || mc.player.hasStatusEffect(StatusEffects.SLOW_FALLING)
-                || mc.player.isClimbing()
-                || Managers.PLAYER.isInWeb()
-                || mc.player.isInLava() 
-                || mc.player.isSubmergedInWater()) {
+        if (mc.player.isInLava() || mc.player.isSubmergedInWater())
             return true;
-        }
 
-        // OnlyCrit выключен - можно бить на земле без крита
-        if (!onlySpace.getValue() && !autoJump.getValue() && mc.player.isOnGround())
+        if (!mc.options.jumpKey.isPressed() && isAboveWater())
+            return true;
+
+        // я хз почему оно не критует когда фд больше 1.14
+        if (mc.player.fallDistance > 1 && mc.player.fallDistance < 1.14)
+            return false;
+
+        if (!reasonForSkipCrit)
+            return !mc.player.isOnGround() && mc.player.fallDistance > 0.0f;
         return true;
-
-        // Ждём момент для крита - нужно быть в воздухе
-        if (mc.player.isOnGround())
-            return false;
-
-        // Проверка на баг с fallDistance 1.0-1.14
-        if (mc.player.fallDistance > 1f && mc.player.fallDistance < 1.14f)
-            return false;
-
-        double velocityY = mc.player.getVelocity().y;
-        float fallDist = mc.player.fallDistance;
-        
-        // Условия для крита:
-        // 1. velocity.y < 0 (падаем вниз)
-        // 2. fallDistance > critFallDistance (накопили падение)
-        // Работает и при прыжках на верхние блоки - там тоже есть момент падения
-        
-        if (velocityY >= 0)
-            return false;
-        
-        return fallDist > critFallDistance;
     }
 
     private boolean shieldBreaker(boolean instant) { //todo - Actual value of parameter 'instant' is always 'false'
