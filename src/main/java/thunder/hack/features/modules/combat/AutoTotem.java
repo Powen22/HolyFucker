@@ -22,7 +22,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
-import org.lwjgl.glfw.GLFW;
 import thunder.hack.core.Managers;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.gui.notification.Notification;
@@ -31,10 +30,7 @@ import thunder.hack.events.impl.PacketEvent;
 import thunder.hack.injection.accesors.IMinecraftClient;
 import thunder.hack.features.modules.Module;
 import thunder.hack.setting.Setting;
-import thunder.hack.setting.impl.Bind;
-import thunder.hack.setting.impl.BooleanSettingGroup;
 import thunder.hack.setting.impl.SettingGroup;
-import thunder.hack.utility.Timer;
 import thunder.hack.utility.world.ExplosionUtility;
 import thunder.hack.utility.math.PredictUtility;
 import thunder.hack.utility.player.InventoryUtility;
@@ -46,16 +42,10 @@ public final class AutoTotem extends Module {
     private static final int ANCHOR_CHECK_RADIUS = 6;
     private static final int BASE_DELAY = 2;
     private static final float PING_DELAY_DIVISOR = 25f;
-    private static final int BIND_DELAY_MS = 250;
     private static final int INSTANT_DELAY = 20;
 
     private final Setting<Mode> mode = new Setting<>("Mode", Mode.Matrix);
     private final Setting<OffHand> offhand = new Setting<>("Item", OffHand.Totem);
-    private final Setting<BooleanSettingGroup> bindSwap = new Setting<>("BindSwap", new BooleanSettingGroup(false), v -> offhand.is(OffHand.Totem));
-    private final Setting<Bind> swapButton = new Setting<>("SwapButton", new Bind(GLFW.GLFW_KEY_CAPS_LOCK, false, false)).addToGroup(bindSwap);
-    private final Setting<Swap> swapMode = new Setting<>("Swap", Swap.GappleShield).addToGroup(bindSwap);
-    private final Setting<Boolean> ignoreUnenchantedTotem = new Setting<>("IgnoreUnenchantedTotem", false).addToGroup(bindSwap);
-    private final Setting<Boolean> swapNotify = new Setting<>("SwapNotify", true).addToGroup(bindSwap);
     private final Setting<Boolean> ncpStrict = new Setting<>("NCPStrict", false);
     private final Setting<Boolean> saveEnchantedTotem = new Setting<>("SaveEnchantedTotem", false);
     private final Setting<Boolean> restoreAfterPop = new Setting<>("RestoreAfterPop", true);
@@ -83,18 +73,12 @@ public final class AutoTotem extends Module {
 
     private enum Mode {Default, Alternative, Matrix, MatrixPick, NewVersion}
 
-    private enum Swap {GappleShield, BallShield, GappleBall, BallTotem, TotemTotem}
-
     public enum RCGap {Off, Always, OnlySafe}
 
     private int delay = 0;
 
-    private final Timer bindDelay = new Timer();
-
-    private boolean bindWasPressed = false; // Track if bind was released before next press
     private Item itemBeforeTotem = null; // Предмет который был до тотема
     private boolean totemWasPlaced = false; // Флаг что тотем был положен в оффхенд
-    private boolean totemTotemSwapDone = false; // Флаг что свап TotemTotem уже выполнен за это нажатие бинда
 
     public AutoTotem() {
         super("AutoTotem", Category.COMBAT);
@@ -102,6 +86,7 @@ public final class AutoTotem extends Module {
 
     @EventHandler
     public void onSync(EventSync e) {
+        if (fullNullCheck()) return;
         swapTo(getItemSlot());
 
         if (rcGap.not(RCGap.Off) && (mc.player.getMainHandStack().getItem() instanceof SwordItem) && mc.options.useKey.isPressed() && !mc.player.isUsingItem())
@@ -112,6 +97,7 @@ public final class AutoTotem extends Module {
 
     @EventHandler
     public void onPacketReceive(PacketEvent.@NotNull Receive e) {
+        if (fullNullCheck()) return;
         // Детект попа тотема (status 35 = totem of undying used)
         if (e.getPacket() instanceof EntityStatusS2CPacket status) {
             if (status.getStatus() == 35 && status.getEntity(mc.world) == mc.player) {
@@ -157,6 +143,7 @@ public final class AutoTotem extends Module {
     }
 
     private int findTotemSlot() {
+        if (fullNullCheck()) return -1;
         // Сначала проверяем инвентарь (9-35)
         for (int i = 9; i < 36; i++) {
             ItemStack stack = mc.player.getInventory().getStack(i);
@@ -183,10 +170,12 @@ public final class AutoTotem extends Module {
     }
 
     private float getTriggerHealth() {
+        if (fullNullCheck()) return 0f;
         return mc.player.getHealth() + (calcAbsorption.getValue() ? mc.player.getAbsorptionAmount() : 0f);
     }
 
     private void runInstant() {
+        if (fullNullCheck()) return;
         int totemSlot = findAvailableTotemSlot();
         if (totemSlot != -1) {
             if (totemSlot < 9) {
@@ -203,6 +192,7 @@ public final class AutoTotem extends Module {
 
     // Находит слот доступного тотема с учётом saveEnchantedTotem
     private int findAvailableTotemSlot() {
+        if (fullNullCheck()) return -1;
         // Сначала проверяем инвентарь (9-35)
         for (int i = 9; i < 36; i++) {
             ItemStack stack = mc.player.getInventory().getStack(i);
@@ -224,159 +214,81 @@ public final class AutoTotem extends Module {
         return -1;
     }
     
-    // Находит слот другого тотема (не того, что в оффхенде) для свапа TotemTotem
-    private int findOtherTotemSlot() {
-        ItemStack offhandStack = mc.player.getOffHandStack();
-        boolean offhandEnchanted = isEnchanted(offhandStack);
-        
-        int bestSlot = -1;
-        boolean bestEnchanted = false;
-        
-        // Если в оффхенде незачарованный тотем, приоритизируем зачарованный
-        // Если в оффхенде зачарованный, ищем незачарованный (если saveEnchantedTotem выключен)
-        
-        // Сначала проверяем инвентарь (9-35)
-        for (int i = 9; i < 36; i++) {
-            ItemStack stack = mc.player.getInventory().getStack(i);
-            if (stack.getItem() == Items.TOTEM_OF_UNDYING) {
-                boolean stackEnchanted = isEnchanted(stack);
-                
-                // Если в оффхенде незачарованный, а в инвентаре зачарованный - это лучший вариант
-                if (!offhandEnchanted && stackEnchanted) {
-                    return i; // Сразу возвращаем зачарованный тотем
-                }
-                
-                // Если в оффхенде зачарованный, ищем незачарованный (если saveEnchantedTotem выключен)
-                if (offhandEnchanted && !stackEnchanted && !saveEnchantedTotem.getValue()) {
-                    return i; // Сразу возвращаем незачарованный тотем
-                }
-                
-                // Если saveEnchantedTotem включен и тотем зачарованный, пропускаем
-                if (saveEnchantedTotem.getValue() && stackEnchanted) {
-                    continue;
-                }
-                
-                // Сохраняем первый найденный тотем как запасной вариант
-                if (bestSlot == -1) {
-                    bestSlot = i;
-                    bestEnchanted = stackEnchanted;
-                }
-            }
-        }
-        
-        // Потом хотбар (0-8)
-        for (int i = 0; i < 9; i++) {
-            ItemStack stack = mc.player.getInventory().getStack(i);
-            if (stack.getItem() == Items.TOTEM_OF_UNDYING) {
-                boolean stackEnchanted = isEnchanted(stack);
-                
-                // Если в оффхенде незачарованный, а в инвентаре зачарованный - это лучший вариант
-                if (!offhandEnchanted && stackEnchanted) {
-                    return i; // Сразу возвращаем зачарованный тотем
-                }
-                
-                // Если в оффхенде зачарованный, ищем незачарованный (если saveEnchantedTotem выключен)
-                if (offhandEnchanted && !stackEnchanted && !saveEnchantedTotem.getValue()) {
-                    return i; // Сразу возвращаем незачарованный тотем
-                }
-                
-                // Если saveEnchantedTotem включен и тотем зачарованный, пропускаем
-                if (saveEnchantedTotem.getValue() && stackEnchanted) {
-                    continue;
-                }
-                
-                // Сохраняем первый найденный тотем как запасной вариант
-                if (bestSlot == -1) {
-                    bestSlot = i;
-                    bestEnchanted = stackEnchanted;
-                }
-            }
-        }
-        
-        return bestSlot;
-    }
-
     public void swapTo(int slot) {
-        if (slot != -1 && delay <= 0) {
-            // Если это свап TotemTotem по бинду, устанавливаем флаг после успешного свапа
-            if (bindSwap.getValue().isEnabled() && swapMode.getValue() == Swap.TotemTotem 
-                    && mc.player.getOffHandStack().getItem() == Items.TOTEM_OF_UNDYING) {
-                totemTotemSwapDone = true;
-            }
-            // Block when container is open, unless GuiMove is enabled
-            if (mc.currentScreen instanceof GenericContainerScreen && !ModuleManager.guiMove.isEnabled()) return;
+        if (fullNullCheck() || slot == -1 || delay > 0) return;
+        // Block when container is open, unless GuiMove is enabled
+        if (mc.currentScreen instanceof GenericContainerScreen && !ModuleManager.guiMove.isEnabled()) return;
 
-            if (stopMotion.getValue()) mc.player.setVelocity(0, mc.player.getVelocity().getY(), 0);
+        if (stopMotion.getValue()) mc.player.setVelocity(0, mc.player.getVelocity().getY(), 0);
 
-            int nearestSlot = findNearestCurrentItem();
-            int prevCurrentItem = mc.player.getInventory().selectedSlot;
-            if (slot >= 9) {
-                switch (mode.getValue()) {
-                    case Default -> {
-                        if (ncpStrict.getValue())
-                            sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.STOP_SPRINTING));
-                        clickSlot(slot);
-                        clickSlot(45);
-                        clickSlot(slot);
-                        sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
-                    }
-                    case Alternative -> {
-                        if (ncpStrict.getValue())
-                            sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.STOP_SPRINTING));
-                        clickSlot(slot, nearestSlot, SlotActionType.SWAP);
-                        clickSlot(45, nearestSlot, SlotActionType.SWAP);
-                        clickSlot(slot, nearestSlot, SlotActionType.SWAP);
-                        sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
-                    }
-                    case Matrix -> {
-                        if (ncpStrict.getValue())
-                            sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.STOP_SPRINTING));
-
-                        mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, slot, nearestSlot, SlotActionType.SWAP, mc.player);
-                        debug(slot + " " + nearestSlot);
-
-                        sendPacket(new UpdateSelectedSlotC2SPacket(nearestSlot));
-                        mc.player.getInventory().selectedSlot = nearestSlot;
-
-                        ItemStack itemstack = mc.player.getOffHandStack();
-                        mc.player.setStackInHand(Hand.OFF_HAND, mc.player.getMainHandStack());
-                        mc.player.setStackInHand(Hand.MAIN_HAND, itemstack);
-                        sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND, BlockPos.ORIGIN, Direction.DOWN));
-
-                        sendPacket(new UpdateSelectedSlotC2SPacket(prevCurrentItem));
-                        mc.player.getInventory().selectedSlot = prevCurrentItem;
-
-                        mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, slot, nearestSlot, SlotActionType.SWAP, mc.player);
-
-                        sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
-                        if (resetAttackCooldown.getValue())
-                            mc.player.resetLastAttackedTicks();
-                    }
-                    case MatrixPick -> {
-                        debug(slot + " pick");
-                        sendPacket(new PickFromInventoryC2SPacket(slot));
-                        sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND, BlockPos.ORIGIN, Direction.DOWN));
-                        int prevSlot = mc.player.getInventory().selectedSlot;
-                        mc.execute(() -> mc.player.getInventory().selectedSlot = prevSlot);
-                    }
-                    case NewVersion -> {
-                        debug(slot + " swap");
-                        mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, slot, 40, SlotActionType.SWAP, mc.player);
-                        sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
-                    }
+        int nearestSlot = findNearestCurrentItem();
+        int prevCurrentItem = mc.player.getInventory().selectedSlot;
+        if (slot >= 9) {
+            switch (mode.getValue()) {
+                case Default -> {
+                    if (ncpStrict.getValue())
+                        sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.STOP_SPRINTING));
+                    clickSlot(slot);
+                    clickSlot(45);
+                    clickSlot(slot);
+                    sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
                 }
-            } else {
-                sendPacket(new UpdateSelectedSlotC2SPacket(slot));
-                mc.player.getInventory().selectedSlot = slot;
-                debug(slot + " select");
-                sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND, BlockPos.ORIGIN, Direction.DOWN));
-                sendPacket(new UpdateSelectedSlotC2SPacket(prevCurrentItem));
-                mc.player.getInventory().selectedSlot = prevCurrentItem;
-                if (resetAttackCooldown.getValue())
-                    mc.player.resetLastAttackedTicks();
+                case Alternative -> {
+                    if (ncpStrict.getValue())
+                        sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.STOP_SPRINTING));
+                    clickSlot(slot, nearestSlot, SlotActionType.SWAP);
+                    clickSlot(45, nearestSlot, SlotActionType.SWAP);
+                    clickSlot(slot, nearestSlot, SlotActionType.SWAP);
+                    sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
+                }
+                case Matrix -> {
+                    if (ncpStrict.getValue())
+                        sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.STOP_SPRINTING));
+
+                    mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, slot, nearestSlot, SlotActionType.SWAP, mc.player);
+                    debug(slot + " " + nearestSlot);
+
+                    sendPacket(new UpdateSelectedSlotC2SPacket(nearestSlot));
+                    mc.player.getInventory().selectedSlot = nearestSlot;
+
+                    ItemStack itemstack = mc.player.getOffHandStack();
+                    mc.player.setStackInHand(Hand.OFF_HAND, mc.player.getMainHandStack());
+                    mc.player.setStackInHand(Hand.MAIN_HAND, itemstack);
+                    sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND, BlockPos.ORIGIN, Direction.DOWN));
+
+                    sendPacket(new UpdateSelectedSlotC2SPacket(prevCurrentItem));
+                    mc.player.getInventory().selectedSlot = prevCurrentItem;
+
+                    mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, slot, nearestSlot, SlotActionType.SWAP, mc.player);
+
+                    sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
+                    if (resetAttackCooldown.getValue())
+                        mc.player.resetLastAttackedTicks();
+                }
+                case MatrixPick -> {
+                    debug(slot + " pick");
+                    sendPacket(new PickFromInventoryC2SPacket(slot));
+                    sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND, BlockPos.ORIGIN, Direction.DOWN));
+                    int prevSlot = mc.player.getInventory().selectedSlot;
+                    mc.execute(() -> mc.player.getInventory().selectedSlot = prevSlot);
+                }
+                case NewVersion -> {
+                    debug(slot + " swap");
+                    mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, slot, 40, SlotActionType.SWAP, mc.player);
+                    sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
+                }
             }
-            delay = (int) (BASE_DELAY + (Managers.SERVER.getPing() / PING_DELAY_DIVISOR));
+        } else {
+            sendPacket(new UpdateSelectedSlotC2SPacket(slot));
+            mc.player.getInventory().selectedSlot = slot;
+            debug(slot + " select");
+            sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND, BlockPos.ORIGIN, Direction.DOWN));
+            sendPacket(new UpdateSelectedSlotC2SPacket(prevCurrentItem));
+            mc.player.getInventory().selectedSlot = prevCurrentItem;
+            if (resetAttackCooldown.getValue())
+                mc.player.resetLastAttackedTicks();
         }
+        delay = (int) (BASE_DELAY + (Managers.SERVER.getPing() / PING_DELAY_DIVISOR));
     }
 
     public static int findNearestCurrentItem() {
@@ -396,7 +308,6 @@ public final class AutoTotem extends Module {
 
         int itemSlot = -1;
         Item item = null;
-        boolean bindSwapPressed = false;
         switch (offhand.getValue()) {
             case Totem -> {
                 // Восстановление предмета после попа тотема
@@ -405,90 +316,14 @@ public final class AutoTotem extends Module {
                     item = itemBeforeTotem;
                     itemBeforeTotem = null; // Сбрасываем после восстановления
                 }
-                
-                // Свап по бинду
-                if (bindSwap.getValue().isEnabled()) {
-                    boolean bindCurrentlyPressed = isKeyPressed(swapButton);
-                    boolean shouldTrigger = bindCurrentlyPressed && !bindWasPressed;
-                    if (!bindCurrentlyPressed && bindWasPressed) {
-                        // Бинд отпущен - сбрасываем флаг свапа
-                        totemTotemSwapDone = false;
-                    }
-                    bindWasPressed = bindCurrentlyPressed;
-                    
-                    if (shouldTrigger) {
-                        bindSwapPressed = true;
-                        switch (swapMode.getValue()) {
-                            case BallShield -> {
-                                if (mc.player.getOffHandStack().isEmpty() || offHandItem == Items.SHIELD)
-                                    item = Items.PLAYER_HEAD;
-                                else item = Items.SHIELD;
-                            }
-                            case GappleBall -> {
-                                if (mc.player.getOffHandStack().isEmpty() || offHandItem == Items.GOLDEN_APPLE)
-                                    item = Items.PLAYER_HEAD;
-                                else item = Items.GOLDEN_APPLE;
-                            }
-                            case GappleShield -> {
-                                if (mc.player.getOffHandStack().isEmpty() || offHandItem == Items.SHIELD)
-                                    item = Items.GOLDEN_APPLE;
-                                else item = Items.SHIELD;
-                            }
-                            case BallTotem -> {
-                                boolean hasTotemInOffhand = offHandItem == Items.TOTEM_OF_UNDYING;
-                                if (hasTotemInOffhand && ignoreUnenchantedTotem.getValue() && !isEnchanted(mc.player.getOffHandStack())) {
-                                    hasTotemInOffhand = false;
-                                }
-                                boolean hasSkullInOffhand = isSkullItem(offHandItem);
-                                
-                                if (mc.player.getOffHandStack().isEmpty() || hasTotemInOffhand) {
-                                    item = Items.PLAYER_HEAD;
-                                } else if (hasSkullInOffhand) {
-                                    if (ignoreUnenchantedTotem.getValue() && !hasEnchantedTotem()) {
-                                        item = null;
-                                    } else {
-                                        item = Items.TOTEM_OF_UNDYING;
-                            }
-                                } else {
-                                    item = Items.PLAYER_HEAD;
-                                }
-                            }
-                            case TotemTotem -> {
-                                // Свап Totem на Totem: если в оффхенде тотем, свапаем на другой тотем из инвентаря
-                                boolean hasTotemInOffhand = offHandItem == Items.TOTEM_OF_UNDYING;
-                                if (hasTotemInOffhand && ignoreUnenchantedTotem.getValue() && !isEnchanted(mc.player.getOffHandStack())) {
-                                    // Если в оффхенде незачарованный тотем и включен ignoreUnenchantedTotem, считаем что тотема нет
-                                    hasTotemInOffhand = false;
-                                }
-                                
-                                if (mc.player.getOffHandStack().isEmpty() || !hasTotemInOffhand) {
-                                    // Если оффхенд пуст или нет тотема - свапаем на тотем
-                                    if (ignoreUnenchantedTotem.getValue() && !hasEnchantedTotem()) {
-                                        item = null; // Нет зачарованного тотема
-                                    } else {
-                                        item = Items.TOTEM_OF_UNDYING;
-                                    }
-                                } else {
-                                    // Если в оффхенде тотем - свапаем на другой тотем из инвентаря
-                                    // Проверяем, есть ли другой тотем в инвентаре (не тот, что в оффхенде)
-                                    int otherTotemSlot = findOtherTotemSlot();
-                                    if (otherTotemSlot != -1) {
-                                        item = Items.TOTEM_OF_UNDYING;
-                                    } else {
-                                        item = null; // Нет другого тотема для свапа
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    }
             }
 
             case Crystal -> item = Items.END_CRYSTAL;
 
             case GApple -> {
                 if (crappleSpoof.getValue()) {
-                    if (mc.player.hasStatusEffect(StatusEffects.ABSORPTION) && mc.player.getStatusEffect(StatusEffects.ABSORPTION).getAmplifier() > 2) {
+                    var absorption = mc.player.getStatusEffect(StatusEffects.ABSORPTION);
+                    if (absorption != null && absorption.getAmplifier() > 2) {
                         if (crapple.found() || offHandItem == Items.GOLDEN_APPLE)
                             item = Items.GOLDEN_APPLE;
                         else if (gapple.found() || offHandItem == Items.ENCHANTED_GOLDEN_APPLE)
@@ -528,24 +363,8 @@ public final class AutoTotem extends Module {
             }
         }
 
-        // Check if we should skip safety overrides:
-        // 1. When bind swap is pressed for BallTotem and we want to swap TO skull (not to totem)
-        // 2. OR when skull already in offhand with ignoreUnenchantedTotem enabled and no enchanted totem
-        boolean bindSwapToSkull = bindSwapPressed 
-                && swapMode.getValue() == Swap.BallTotem 
-                && item == Items.PLAYER_HEAD;
-        boolean skullAlreadyInOffhand = offhand.getValue() == OffHand.Totem
-                && swapMode.getValue() == Swap.BallTotem 
-                && bindSwap.getValue().isEnabled() 
-                && ignoreUnenchantedTotem.getValue() 
-                && isSkullItem(offHandItem) 
-                && !hasEnchantedTotem();
-        boolean skipSafetyTotemOverride = bindSwapToSkull || skullAlreadyInOffhand;
-
-        if (!skipSafetyTotemOverride) {
         if (getTriggerHealth() <= healthF.getValue() && hasAvailableTotem())
             item = Items.TOTEM_OF_UNDYING;
-        }
 
         if (!rcGap.is(RCGap.Off) && (mc.player.getMainHandStack().getItem() instanceof SwordItem) && mc.options.useKey.isPressed() && !(offHandItem instanceof ShieldItem)) {
             if (rcGap.is(RCGap.Always) || (rcGap.is(RCGap.OnlySafe) && getTriggerHealth() > healthF.getValue())) {
@@ -556,7 +375,6 @@ public final class AutoTotem extends Module {
             }
         }
 
-        if (!skipSafetyTotemOverride) {
         if (onFall.getValue() && (getTriggerHealth()) - (((mc.player.fallDistance - 3) / 2F) + 3.5F) < 0.5)
             item = Items.TOTEM_OF_UNDYING;
 
@@ -567,21 +385,21 @@ public final class AutoTotem extends Module {
             for (PlayerEntity pl : Managers.ASYNC.getAsyncPlayers()) {
                 if (Managers.FRIEND.isFriend(pl)) continue;
                 if (pl == mc.player) continue;
-                    if (getPlayerPos().squaredDistanceTo(pl.getPos()) < DANGER_DISTANCE_SQ) {
-                        Item mainHand = pl.getMainHandStack().getItem();
-                        Item offHand = pl.getOffHandStack().getItem();
-                        if (mainHand == Items.OBSIDIAN || mainHand == Items.END_CRYSTAL
-                                || offHand == Items.OBSIDIAN || offHand == Items.END_CRYSTAL) {
+                if (getPlayerPos().squaredDistanceTo(pl.getPos()) < DANGER_DISTANCE_SQ) {
+                    Item mainHand = pl.getMainHandStack().getItem();
+                    Item offHand = pl.getOffHandStack().getItem();
+                    if (mainHand == Items.OBSIDIAN || mainHand == Items.END_CRYSTAL
+                            || offHand == Items.OBSIDIAN || offHand == Items.END_CRYSTAL) {
                         item = Items.TOTEM_OF_UNDYING;
-                            break;
-                        }
+                        break;
+                    }
                 }
             }
         }
 
         for (Entity entity : mc.world.getEntities()) {
             if (entity == null || !entity.isAlive()) continue;
-                if (getPlayerPos().squaredDistanceTo(entity.getPos()) > DANGER_DISTANCE_SQ) continue;
+            if (getPlayerPos().squaredDistanceTo(entity.getPos()) > DANGER_DISTANCE_SQ) continue;
 
             if (onCrystal.getValue()) {
                 if (entity instanceof EndCrystalEntity) {
@@ -615,26 +433,23 @@ public final class AutoTotem extends Module {
         }
 
         if (onAnchor.getValue()) {
-                BlockPos playerPos = mc.player.getBlockPos();
-                anchorSearch:
-                for (int x = -ANCHOR_CHECK_RADIUS; x <= ANCHOR_CHECK_RADIUS; x++) {
-                    for (int y = -ANCHOR_CHECK_RADIUS; y <= ANCHOR_CHECK_RADIUS; y++) {
-                        for (int z = -ANCHOR_CHECK_RADIUS; z <= ANCHOR_CHECK_RADIUS; z++) {
-                            BlockPos bp = playerPos.add(x, y, z);
+            BlockPos playerPos = mc.player.getBlockPos();
+            anchorSearch:
+            for (int x = -ANCHOR_CHECK_RADIUS; x <= ANCHOR_CHECK_RADIUS; x++) {
+                for (int y = -ANCHOR_CHECK_RADIUS; y <= ANCHOR_CHECK_RADIUS; y++) {
+                    for (int z = -ANCHOR_CHECK_RADIUS; z <= ANCHOR_CHECK_RADIUS; z++) {
+                        BlockPos bp = playerPos.add(x, y, z);
                         if (mc.world.getBlockState(bp).getBlock() == Blocks.RESPAWN_ANCHOR) {
                             item = Items.TOTEM_OF_UNDYING;
-                                break anchorSearch;
+                            break anchorSearch;
                         }
                     }
-        }
                 }
             }
         }
 
         // Свап Totem на Totem: если в оффхенде тотем, ищем лучший в инвентаре
-        // Отключаем автоматический свап если используется режим TotemTotem по бинду
-        boolean isTotemTotemMode = bindSwap.getValue().isEnabled() && swapMode.getValue() == Swap.TotemTotem;
-        if (offHandItem == Items.TOTEM_OF_UNDYING && !skipSafetyTotemOverride && !bindSwapPressed && !isTotemTotemMode) {
+        if (offHandItem == Items.TOTEM_OF_UNDYING) {
             ItemStack offhandTotem = mc.player.getOffHandStack();
             boolean offhandTotemEnchanted = isEnchanted(offhandTotem);
             
@@ -733,46 +548,16 @@ public final class AutoTotem extends Module {
         boolean itemAlreadyInOffhand = (item == Items.PLAYER_HEAD && isSkullItem(offhandItemCurrent)) 
                 || offhandItemCurrent == item;
         
-        // Если это свап TotemTotem по бинду и в оффхенде уже тотем - не свапаем повторно
-        // (свап должен происходить только один раз при нажатии бинда)
-        boolean isTotemTotemBindSwap = bindSwapPressed && swapMode.getValue() == Swap.TotemTotem 
-                && item == Items.TOTEM_OF_UNDYING;
-        
         // Если itemSlot уже установлен для свапа Totem на Totem, пропускаем проверку itemAlreadyInOffhand
         boolean isTotemToTotemSwap = item == Items.TOTEM_OF_UNDYING 
                 && offHandItem == Items.TOTEM_OF_UNDYING 
                 && itemSlot != -1;
         
-        // Для TotemTotem по бинду: если в оффхенде уже тотем, проверяем есть ли другой тотем
-        // И свап еще не был выполнен за это нажатие бинда
-        if (isTotemTotemBindSwap && offhandItemCurrent == Items.TOTEM_OF_UNDYING && !totemTotemSwapDone) {
-            // Проверяем, есть ли другой тотем в инвентаре для свапа
-            int otherTotemSlot = findOtherTotemSlot();
-            if (otherTotemSlot == -1) {
-                // Нет другого тотема - не свапаем
-                return -1;
-            }
-            // Есть другой тотем - продолжаем свап (пропускаем проверку itemAlreadyInOffhand)
-            // itemSlot будет установлен ниже в коде при поиске слота
-        } else if (isTotemTotemBindSwap && totemTotemSwapDone) {
-            // Свап уже выполнен за это нажатие бинда - не свапаем повторно
+        if (itemAlreadyInOffhand && !isTotemToTotemSwap) {
             return -1;
         }
         
-        if (itemAlreadyInOffhand && !isTotemToTotemSwap && !isTotemTotemBindSwap) {
-            // If ignoring unenchanted totems on bind swap, check if current offhand totem is enchanted
-            if (!(item == Items.TOTEM_OF_UNDYING && bindSwapPressed && ignoreUnenchantedTotem.getValue() 
-                    && !isEnchanted(mc.player.getOffHandStack()))) {
-                return -1;
-            }
-        }
-        
         if (item == mc.player.getMainHandStack().getItem() && mc.options.useKey.isPressed()) return -1;
-
-        // Check if we need to filter for enchanted totems only
-        boolean requireEnchantedTotem = item == Items.TOTEM_OF_UNDYING 
-                && bindSwapPressed 
-                && ignoreUnenchantedTotem.getValue();
 
         // Сначала проверяем инвентарь (9-35)
         for (int i = 9; i < 36; i++) {
@@ -783,12 +568,8 @@ public final class AutoTotem extends Module {
                     || stack.getItem() == item;
             
             if (itemMatches) {
-                // If requiring enchanted totem, skip unenchanted ones
-                if (requireEnchantedTotem && !isEnchanted(stack)) {
-                    continue;
-                }
-                // Пропускаем зачарованные тотемы если включено сохранение (кроме bind swap)
-                if (item == Items.TOTEM_OF_UNDYING && saveEnchantedTotem.getValue() && isEnchanted(stack) && !bindSwapPressed) {
+                // Пропускаем зачарованные тотемы если включено сохранение
+                if (item == Items.TOTEM_OF_UNDYING && saveEnchantedTotem.getValue() && isEnchanted(stack)) {
                     continue;
                 }
                 itemSlot = i;
@@ -806,12 +587,8 @@ public final class AutoTotem extends Module {
                         || stack.getItem() == item;
                 
                 if (itemMatches) {
-                    // If requiring enchanted totem, skip unenchanted ones
-                    if (requireEnchantedTotem && !isEnchanted(stack)) {
-                        continue;
-                    }
-                    // Пропускаем зачарованные тотемы если включено сохранение (кроме bind swap)
-                    if (item == Items.TOTEM_OF_UNDYING && saveEnchantedTotem.getValue() && isEnchanted(stack) && !bindSwapPressed) {
+                    // Пропускаем зачарованные тотемы если включено сохранение
+                    if (item == Items.TOTEM_OF_UNDYING && saveEnchantedTotem.getValue() && isEnchanted(stack)) {
                         continue;
                     }
                     itemSlot = i;
@@ -828,17 +605,11 @@ public final class AutoTotem extends Module {
             totemWasPlaced = true;
         }
 
-        // Уведомление при свапе по бинду
-        if (bindSwapPressed && itemSlot != -1 && swapNotify.getValue()) {
-            ItemStack swapStack = mc.player.getInventory().getStack(itemSlot);
-            String itemName = swapStack.getName().getString();
-            Managers.NOTIFICATION.publicity("AutoSwap", "Свапнул на " + itemName, 2, Notification.Type.SUCCESS);
-        }
-
         return itemSlot;
     }
 
     private Vec3d getPlayerPos() {
+        if (fullNullCheck()) return Vec3d.ZERO;
         return mc.player.getPos();
     }
 
@@ -848,6 +619,7 @@ public final class AutoTotem extends Module {
     }
 
     private boolean hasEnchantedTotem() {
+        if (fullNullCheck()) return false;
         // Check offhand
         if (mc.player.getOffHandStack().getItem() == Items.TOTEM_OF_UNDYING && isEnchanted(mc.player.getOffHandStack())) {
             return true;
@@ -864,6 +636,7 @@ public final class AutoTotem extends Module {
 
     // Проверяет есть ли доступный тотем с учётом saveEnchantedTotem
     private boolean hasAvailableTotem() {
+        if (fullNullCheck()) return false;
         // Check offhand
         if (mc.player.getOffHandStack().getItem() == Items.TOTEM_OF_UNDYING) {
             if (!saveEnchantedTotem.getValue() || !isEnchanted(mc.player.getOffHandStack())) {

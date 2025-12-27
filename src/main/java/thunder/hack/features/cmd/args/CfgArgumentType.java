@@ -12,14 +12,21 @@ import net.minecraft.text.Text;
 import thunder.hack.core.Managers;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static thunder.hack.features.modules.client.ClientSettings.isRu;
 
 public class CfgArgumentType implements ArgumentType<String> {
-    private static final Collection<String> EXAMPLES = Managers.CONFIG.getConfigList().stream()
-            .limit(5)
-            .toList();
+    private static final Collection<String> EXAMPLES = getExamplesList();
+
+    private static Collection<String> getExamplesList() {
+        List<String> configList = Managers.CONFIG.getConfigList();
+        if (configList == null || configList.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        return configList.stream().limit(5).toList();
+    }
 
     public static CfgArgumentType create() {
         return new CfgArgumentType();
@@ -28,7 +35,8 @@ public class CfgArgumentType implements ArgumentType<String> {
     @Override
     public String parse(StringReader reader) throws CommandSyntaxException {
         String config = reader.readString();
-        if (!Managers.CONFIG.getConfigList().contains(config)) throw new DynamicCommandExceptionType(
+        List<String> configList = Managers.CONFIG.getConfigList();
+        if (configList == null || !configList.contains(config)) throw new DynamicCommandExceptionType(
                 name -> Text.literal(isRu() ? "Конфига " + name.toString() + " не существует(" : "Config " + name.toString() + " does not exist :(")
         ).create(config);
 
@@ -37,7 +45,11 @@ public class CfgArgumentType implements ArgumentType<String> {
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        return CommandSource.suggestMatching(Managers.CONFIG.getConfigList(), builder);
+        List<String> configList = Managers.CONFIG.getConfigList();
+        if (configList == null || configList.isEmpty()) {
+            return Suggestions.empty();
+        }
+        return CommandSource.suggestMatching(configList, builder);
     }
 
     @Override

@@ -51,7 +51,7 @@ public class ProxyManager implements IManager {
 
     public void onLoad() {
         try {
-            File file = new File(ConfigManager.CONFIG_FOLDER_NAME + "/misc/proxies.txt");
+            File file = new File(ConfigManager.MISC_FOLDER, "proxies.txt");
 
             if (file.exists()) {
                 try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
@@ -86,9 +86,9 @@ public class ProxyManager implements IManager {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void saveProxies() {
-        File file = new File(ConfigManager.CONFIG_FOLDER_NAME + "/misc/proxies.txt");
+        File file = new File(ConfigManager.MISC_FOLDER, "proxies.txt");
         try {
-            new File(ConfigManager.CONFIG_FOLDER_NAME).mkdirs();
+            ConfigManager.MISC_FOLDER.mkdirs();
             file.createNewFile();
         } catch (Exception ignored) {
         }

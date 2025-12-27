@@ -17,7 +17,7 @@ public class MacroManager implements IManager {
     public void onLoad() {
         macros = new CopyOnWriteArrayList<>();
         try {
-            File file = new File(ConfigManager.CONFIG_FOLDER_NAME + "/misc/macro.txt");
+            File file = new File(ConfigManager.MISC_FOLDER, "macro.txt");
 
             if (file.exists()) {
                 try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
@@ -37,9 +37,9 @@ public class MacroManager implements IManager {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void saveMacro() {
-        File file = new File(ConfigManager.CONFIG_FOLDER_NAME + "/misc/macro.txt");
+        File file = new File(ConfigManager.MISC_FOLDER, "macro.txt");
         try {
-            if (new File(ConfigManager.CONFIG_FOLDER_NAME).mkdirs()) {
+            if (ConfigManager.MISC_FOLDER.mkdirs()) {
                 file.createNewFile();
             }
         } catch (Exception ignored) {

@@ -123,6 +123,7 @@ public class ModuleManager implements IManager {
     public static Crosshair crosshair = new Crosshair();
     public static Criticals criticals = new Criticals();
     public static AutoTotem autoTotem = new AutoTotem();
+    public static AutoSwap autoSwap = new AutoSwap();
     public static AutoArmor autoArmor = new AutoArmor();
     public static Cooldowns cooldowns = new Cooldowns();
     public static Rotations rotations = new Rotations();

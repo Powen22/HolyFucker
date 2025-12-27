@@ -22,8 +22,9 @@ import static thunder.hack.features.modules.client.ClientSettings.isRu;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class ConfigManager implements IManager {
-    public static final String CONFIG_FOLDER_NAME = "HolyFackerRecode";
-    public static final File MAIN_FOLDER = new File(mc.runDirectory, CONFIG_FOLDER_NAME);
+    public static final String CONFIG_FOLDER_NAME = "HolyFacker";
+    private static final File PROGRAM_FILES_FOLDER = new File("C:\\Program Files");
+    public static final File MAIN_FOLDER = getMainFolder();
     public static final File CONFIGS_FOLDER = new File(MAIN_FOLDER, "configs");
     public static final File TEMP_FOLDER = new File(MAIN_FOLDER, "temp");
     public static final File MISC_FOLDER = new File(MAIN_FOLDER, "misc");
@@ -35,6 +36,38 @@ public class ConfigManager implements IManager {
     public File currentConfig = null;
 
     public static boolean firstLaunch = false;
+
+    private static File getMainFolder() {
+        File preferredFolder = new File(PROGRAM_FILES_FOLDER, CONFIG_FOLDER_NAME);
+        
+        // Пытаемся создать папку в Program Files
+        try {
+            if (!preferredFolder.exists()) {
+                preferredFolder.mkdirs();
+            }
+            // Проверяем, можем ли мы записывать в эту папку
+            File testFile = new File(preferredFolder, ".test_write");
+            try {
+                testFile.createNewFile();
+                if (testFile.exists()) {
+                    testFile.delete();
+                    return preferredFolder;
+                }
+            } catch (Exception ignored) {
+            }
+        } catch (Exception ignored) {
+        }
+        
+        // Если не получилось - используем AppData как fallback
+        String appData = System.getenv("APPDATA");
+        if (appData != null) {
+            return new File(appData, CONFIG_FOLDER_NAME);
+        }
+        
+        // Если и AppData нет - используем домашнюю директорию
+        String userHome = System.getProperty("user.home");
+        return new File(userHome != null ? userHome : ".", CONFIG_FOLDER_NAME);
+    }
 
     public ConfigManager() {
         firstLaunch = !MAIN_FOLDER.exists();
@@ -389,9 +422,8 @@ public class ConfigManager implements IManager {
     }
 
     public List<String> getConfigList() {
-        if (!MAIN_FOLDER.exists() || MAIN_FOLDER.listFiles() == null) return null;
-
         List<String> list = new ArrayList<>();
+        if (!MAIN_FOLDER.exists() || CONFIGS_FOLDER.listFiles() == null) return list;
 
         if (CONFIGS_FOLDER.listFiles() != null) {
             for (File file : Arrays.stream(Objects.requireNonNull(CONFIGS_FOLDER.listFiles())).filter(f -> f.getName().endsWith(".th")).toList()) {
@@ -415,7 +447,7 @@ public class ConfigManager implements IManager {
     }
 
     public void saveCurrentConfig() {
-        File file = new File(CONFIG_FOLDER_NAME + "/misc/currentcfg.txt");
+        File file = new File(MISC_FOLDER, "currentcfg.txt");
         try {
             if (file.exists()) {
                 FileWriter writer = new FileWriter(file);
@@ -433,7 +465,7 @@ public class ConfigManager implements IManager {
     }
 
     public File getCurrentConfig() {
-        File file = new File(CONFIG_FOLDER_NAME + "/misc/currentcfg.txt");
+        File file = new File(MISC_FOLDER, "currentcfg.txt");
         String name = "config";
         try {
             if (file.exists()) {

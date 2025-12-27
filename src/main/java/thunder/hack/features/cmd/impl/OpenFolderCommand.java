@@ -5,8 +5,7 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.NotNull;
 import thunder.hack.features.cmd.Command;
-
-import java.io.File;
+import thunder.hack.core.manager.client.ConfigManager;
 
 import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 
@@ -18,7 +17,7 @@ public class OpenFolderCommand extends Command {
     @Override
     public void executeBuild(@NotNull LiteralArgumentBuilder<CommandSource> builder) {
         builder.executes(context -> {
-            Util.getOperatingSystem().open(new File("HolyFackerRecode/configs/"));
+            Util.getOperatingSystem().open(ConfigManager.CONFIGS_FOLDER);
             return SINGLE_SUCCESS;
         });
     }

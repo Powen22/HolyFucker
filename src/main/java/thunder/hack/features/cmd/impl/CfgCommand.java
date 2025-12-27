@@ -47,8 +47,10 @@ public class CfgCommand extends Command {
 
         builder.then(literal("dir").executes(context -> {
             try {
-                net.minecraft.util.Util.getOperatingSystem().open(new File("HolyFackerRecode/configs/").toURI());
+                thunder.hack.core.manager.client.ConfigManager.CONFIGS_FOLDER.mkdirs();
+                net.minecraft.util.Util.getOperatingSystem().open(thunder.hack.core.manager.client.ConfigManager.CONFIGS_FOLDER);
             } catch (Exception e) {
+                sendMessage("Не удалось открыть папку конфигов: " + e.getMessage());
                 e.printStackTrace();
             }
             return SINGLE_SUCCESS;

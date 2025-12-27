@@ -96,7 +96,7 @@ public class UnHook extends Module { // Йо фабос, засунь в о4ко
 
         // Rename cfg dir back
         try {
-            new File("XaeroWaypoints_BACKUP092738").renameTo(new File("HolyFackerRecode"));
+            new File("XaeroWaypoints_BACKUP092738").renameTo(thunder.hack.core.manager.client.ConfigManager.MAIN_FOLDER);
         } catch (Exception e) {
         }
     }

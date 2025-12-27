@@ -5,6 +5,7 @@ import net.minecraft.client.gui.screen.multiplayer.AddServerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
+import thunder.hack.core.manager.client.ConfigManager;
 import thunder.hack.features.modules.Module;
 import thunder.hack.setting.Setting;
 import thunder.hack.utility.Timer;
@@ -40,7 +41,7 @@ public final class RPC extends Module {
 
     public static void readFile() {
         try {
-            File file = new File("HolyFackerRecode/misc/RPC.txt");
+            File file = new File(ConfigManager.MISC_FOLDER, "RPC.txt");
             if (file.exists()) {
                 try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                     while (reader.ready()) {
@@ -53,7 +54,7 @@ public final class RPC extends Module {
     }
 
     public static void WriteFile(String url1, String url2) {
-        File file = new File("HolyFackerRecode/misc/RPC.txt");
+        File file = new File(ConfigManager.MISC_FOLDER, "RPC.txt");
         try {
             file.createNewFile();
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {

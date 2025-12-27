@@ -480,7 +480,7 @@ public class ThunderGui extends Screen {
         }
         if (isHoveringItem(main_posX + 105, main_posY + 14, 11, 11, (float) mouseX, (float) mouseY)) {
             try {
-                net.minecraft.util.Util.getOperatingSystem().open(new File("HolyFackerRecode/configs/").toURI());
+                net.minecraft.util.Util.getOperatingSystem().open(ConfigManager.CONFIGS_FOLDER.toURI());
             } catch (Exception e) {
                 Command.sendMessage("Не удалось открыть проводник!");
             }

@@ -17,7 +17,7 @@ public class WayPointManager implements IManager {
     public void onLoad() {
         wayPoints = new CopyOnWriteArrayList<>();
         try {
-            File file = new File(ConfigManager.CONFIG_FOLDER_NAME + "/misc/waypoints.txt");
+            File file = new File(ConfigManager.MISC_FOLDER, "waypoints.txt");
 
             if (file.exists()) {
                 try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
@@ -40,9 +40,9 @@ public class WayPointManager implements IManager {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void saveWayPoints() {
-        File file = new File(ConfigManager.CONFIG_FOLDER_NAME + "/misc/waypoints.txt");
+        File file = new File(ConfigManager.MISC_FOLDER, "waypoints.txt");
         try {
-            new File(ConfigManager.CONFIG_FOLDER_NAME).mkdirs();
+            ConfigManager.MISC_FOLDER.mkdirs();
             file.createNewFile();
         } catch (Exception ignored) {
         }
