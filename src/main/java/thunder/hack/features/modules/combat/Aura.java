@@ -710,33 +710,63 @@ public class Aura extends Module {
     }
 
     public boolean isInRange(Entity target) {
-        // Быстрая проверка дистанции до центра таргета
-        double distSq = PlayerUtility.squaredDistanceFromEyes(target.getPos().add(0, target.getHeight() / 2.0, 0));
         float maxRange = getRange() + aimRange.getValue();
-
-        // Если таргет слишком далеко - сразу false
-        if (distSq > (maxRange + 1) * (maxRange + 1)) {
+        float maxRangeSq = maxRange * maxRange;
+        
+        // Получаем позицию игрока (глаза)
+        Vec3d eyePos = mc.player.getEyePos();
+        
+        // Получаем хитбокс таргета
+        Box targetBox = target.getBoundingBox();
+        
+        // Вычисляем ближайшую точку хитбокса к позиции глаз
+        double closestX = MathHelper.clamp(eyePos.x, targetBox.minX, targetBox.maxX);
+        double closestY = MathHelper.clamp(eyePos.y, targetBox.minY, targetBox.maxY);
+        double closestZ = MathHelper.clamp(eyePos.z, targetBox.minZ, targetBox.maxZ);
+        Vec3d closestPoint = new Vec3d(closestX, closestY, closestZ);
+        
+        // Быстрая проверка: если ближайшая точка хитбокса слишком далеко - сразу false
+        double closestDistSq = eyePos.squaredDistanceTo(closestPoint);
+        if (closestDistSq > (maxRange + 0.5) * (maxRange + 0.5)) {
             return false;
         }
-
-        // Проверяем несколько ключевых точек хитбокса
+        
+        // Проверяем больше точек хитбокса для лучшего обнаружения на ровной местности
         Vec3d[] checkPoints = {
             target.getPos().add(0, target.getHeight() / 2.0, 0), // Центр
             target.getPos().add(0, target.getEyeHeight(target.getPose()), 0), // Глаза
             target.getPos().add(0, 0.5, 0), // Низ
+            target.getPos().add(0, target.getHeight() * 0.75, 0), // Верхняя часть
+            target.getPos().add(0, target.getHeight() * 0.25, 0), // Нижняя часть
+            // Углы хитбокса для лучшего обнаружения
+            new Vec3d(targetBox.minX, targetBox.minY + target.getHeight() / 2.0, targetBox.minZ),
+            new Vec3d(targetBox.maxX, targetBox.minY + target.getHeight() / 2.0, targetBox.maxZ),
+            new Vec3d(targetBox.minX, targetBox.minY + target.getHeight() / 2.0, targetBox.maxZ),
+            new Vec3d(targetBox.maxX, targetBox.minY + target.getHeight() / 2.0, targetBox.minZ),
         };
         
         for (Vec3d point : checkPoints) {
-            double pointDistSq = PlayerUtility.squaredDistanceFromEyes(point);
-            if (pointDistSq <= maxRange * maxRange) {
+            double pointDistSq = eyePos.squaredDistanceTo(point);
+            if (pointDistSq <= maxRangeSq) {
                 // В пределах дистанции - проверяем видимость если нужно
                 if (getWallRange() > 0 || rayTrace.getValue() == RayTrace.OFF) {
-                        return true;
-                    }
+                    return true;
+                }
                 float[] rotation = Managers.PLAYER.calcAngle(point);
                 if (Managers.PLAYER.checkRtx(rotation[0], rotation[1], getRange(), getWallRange(), rayTrace.getValue())) {
                     return true;
                 }
+            }
+        }
+        
+        // Дополнительная проверка: проверяем ближайшую точку хитбокса (уже вычислена выше)
+        if (closestDistSq <= maxRangeSq) {
+            if (getWallRange() > 0 || rayTrace.getValue() == RayTrace.OFF) {
+                return true;
+            }
+            float[] rotation = Managers.PLAYER.calcAngle(closestPoint);
+            if (Managers.PLAYER.checkRtx(rotation[0], rotation[1], getRange(), getWallRange(), rayTrace.getValue())) {
+                return true;
             }
         }
         
@@ -801,7 +831,14 @@ public class Aura extends Module {
         if (entity instanceof ArmorStandEntity) return true;
         if (entity instanceof CatEntity) return true;
         if (skipNotSelected(entity)) return true;
-        if (!InteractionUtility.isVecInFOV(ent.getPos(), fov.getValue())) return true;
+        
+        // Улучшенная проверка FOV: проверяем центр хитбокса и глаза, а не только позицию
+        Vec3d centerPos = ent.getPos().add(0, ent.getHeight() / 2.0, 0);
+        Vec3d eyePos = ent.getPos().add(0, ent.getEyeHeight(ent.getPose()), 0);
+        boolean inFOV = InteractionUtility.isVecInFOV(centerPos, fov.getValue()) 
+                     || InteractionUtility.isVecInFOV(eyePos, fov.getValue())
+                     || InteractionUtility.isVecInFOV(ent.getPos(), fov.getValue());
+        if (!inFOV) return true;
 
         if (entity instanceof PlayerEntity player) {
             if (ModuleManager.antiBot.isEnabled() && AntiBot.bots.contains(entity))
