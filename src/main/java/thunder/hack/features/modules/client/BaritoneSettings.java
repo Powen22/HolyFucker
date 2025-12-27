@@ -2,7 +2,7 @@ package thunder.hack.features.modules.client;
 
 import baritone.api.BaritoneAPI;
 import meteordevelopment.orbit.EventHandler;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.events.impl.EventSetting;
 import thunder.hack.features.modules.Module;
 import thunder.hack.setting.Setting;
@@ -23,7 +23,7 @@ public final class BaritoneSettings extends Module {
 
     @EventHandler
     public void onSettingChange(EventSetting e) {
-        if (!ThunderHack.baritone) {
+        if (!HolyFacker.baritone) {
             sendMessage(isRu() ? "Баритон не найден (можешь скачать на https://meteorclient.com)" : "Baritone not found (you can download it at https://meteorclient.com)");
             return;
         }

@@ -2,7 +2,7 @@ package thunder.hack.features.modules.player;
 
 import meteordevelopment.orbit.EventHandler;
 import meteordevelopment.orbit.EventPriority;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.events.impl.EventTick;
@@ -16,12 +16,12 @@ public class TpsSync extends Module {
     @EventHandler(priority = EventPriority.HIGH)
     public void onTick(EventTick e) {
         if (Managers.SERVER.getTPS() > 1)
-            ThunderHack.TICK_TIMER = Managers.SERVER.getTPS() / 20f;
-        else ThunderHack.TICK_TIMER = 1f;
+            HolyFacker.TICK_TIMER = Managers.SERVER.getTPS() / 20f;
+        else HolyFacker.TICK_TIMER = 1f;
     }
 
     @Override
     public void onDisable() {
-        ThunderHack.TICK_TIMER = 1f;
+        HolyFacker.TICK_TIMER = 1f;
     }
 }

@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.events.impl.EventAttackBlock;
 import thunder.hack.events.impl.EventBreakBlock;
@@ -80,7 +80,7 @@ public class MixinClientPlayerInteractionManager {
     private void attackBlockHook(BlockPos pos, Direction direction, CallbackInfoReturnable<Boolean> cir) {
         if(Module.fullNullCheck()) return;
         EventAttackBlock event = new EventAttackBlock(pos, direction);
-        ThunderHack.EVENT_BUS.post(event);
+        HolyFacker.EVENT_BUS.post(event);
         if (event.isCancelled())
             cir.setReturnValue(false);
     }
@@ -105,7 +105,7 @@ public class MixinClientPlayerInteractionManager {
     public void breakBlockHook(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
         if(Module.fullNullCheck()) return;
         EventBreakBlock event = new EventBreakBlock(pos);
-        ThunderHack.EVENT_BUS.post(event);
+        HolyFacker.EVENT_BUS.post(event);
         if (event.isCancelled())
             cir.setReturnValue(false);
     }
@@ -114,7 +114,7 @@ public class MixinClientPlayerInteractionManager {
     public void clickSlotHook(int syncId, int slotId, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci) {
         if(Module.fullNullCheck()) return;
         EventClickSlot event = new EventClickSlot(actionType, slotId, button, syncId);
-        ThunderHack.EVENT_BUS.post(event);
+        HolyFacker.EVENT_BUS.post(event);
         if (event.isCancelled())
             ci.cancel();
     }

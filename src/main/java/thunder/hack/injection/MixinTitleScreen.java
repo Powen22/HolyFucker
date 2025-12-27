@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.gui.misc.DialogScreen;
 import thunder.hack.gui.mainmenu.MainMenuScreen;
 import thunder.hack.utility.render.TextureStorage;
@@ -38,7 +38,7 @@ public class MixinTitleScreen extends Screen {
         if (ModuleManager.clickGui.getBind().getKey() == -1) {
             DialogScreen dialogScreen2 = new DialogScreen(
                     TextureStorage.cutie,
-                    isRu() ? "Спасибо что скачали ThunderHack!" : "Thank you for downloading ThunderHack!",
+                    isRu() ? "Спасибо что скачали HolyFacker!" : "Thank you for downloading HolyFacker!",
                     isRu() ? "Меню с функциями клиента открывается на клавишу - P" : "Menu with client modules is opened with the key - P",
                     isRu() ? "Зайти в майн" : "Join on minecraft",
                     isRu() ? "Закрыть майн" : "Close minecraft",
@@ -69,13 +69,12 @@ public class MixinTitleScreen extends Screen {
             mc.setScreen(dialogScreen1);
         }
 
-        if (ThunderHack.isOutdated && !FabricLoader.getInstance().isDevelopmentEnvironment()) {
+        if (HolyFacker.isOutdated && !FabricLoader.getInstance().isDevelopmentEnvironment()) {
             mc.setScreen(new ConfirmScreen(
                     confirm -> {
-                        if (confirm) Util.getOperatingSystem().open(URI.create("https://github.com/Pan4ur/ThunderHack-Recode/releases/download/latest/thunderhack-1.7.jar/"));
-                        else mc.stop();
+                        if (!confirm) mc.stop();
                     },
-                    Text.of(Formatting.RED + "You are using an outdated version of ThunderHack Recode"), Text.of("Please update to the latest release"), Text.of("Download"), Text.of("Quit Game")));
+                    Text.of(Formatting.RED + "You are using an outdated version of HolyFacker Recode"), Text.of("Please update to the latest release"), Text.of("Download"), Text.of("Quit Game")));
         }
     }
 }

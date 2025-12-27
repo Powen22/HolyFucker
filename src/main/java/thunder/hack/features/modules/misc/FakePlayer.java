@@ -15,7 +15,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Vec3d;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.events.impl.EventAttack;
 import thunder.hack.events.impl.EventSync;
@@ -79,7 +79,7 @@ public class FakePlayer extends Module {
                     fakePlayer.setHealth(10f);
 
 
-                    ThunderHack.EVENT_BUS.post(new TotemPopEvent(fakePlayer, 1));
+                    HolyFacker.EVENT_BUS.post(new TotemPopEvent(fakePlayer, 1));
 
                     //      new EntityStatusS2CPacket(fakePlayer, EntityStatuses.USE_TOTEM_OF_UNDYING).apply(mc.player.networkHandler);
                 }

@@ -10,7 +10,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.NotNull;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.gui.font.FontRenderers;
 import thunder.hack.utility.math.MathUtility;
 import thunder.hack.utility.render.Render2DEngine;
@@ -36,7 +36,7 @@ public class CreditsScreen extends Screen {
     protected CreditsScreen() {
         super(Text.of("CreditsScreen"));
         INSTANCE = this;
-        for (String line : ThunderHack.contributors) {
+        for (String line : HolyFacker.contributors) {
             if (line == null)
                 continue;
             String name = line.split(";")[0];

@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.events.impl.EventEntityRemoved;
 import thunder.hack.events.impl.EventEntitySpawn;
@@ -27,7 +27,7 @@ public class MixinClientWorld {
     public void addEntityHook(Entity entity, CallbackInfo ci) {
         if(Module.fullNullCheck()) return;
         EventEntitySpawn ees = new EventEntitySpawn(entity);
-        ThunderHack.EVENT_BUS.post(ees);
+        HolyFacker.EVENT_BUS.post(ees);
         if (ees.isCancelled()) {
             ci.cancel();
         }
@@ -37,7 +37,7 @@ public class MixinClientWorld {
     public void addEntityHookPost(Entity entity, CallbackInfo ci) {
         if(Module.fullNullCheck()) return;
         EventEntitySpawnPost ees = new EventEntitySpawnPost(entity);
-        ThunderHack.EVENT_BUS.post(ees);
+        HolyFacker.EVENT_BUS.post(ees);
         if (ees.isCancelled()) {
             ci.cancel();
         }
@@ -47,7 +47,7 @@ public class MixinClientWorld {
     public void removeEntityHook(int entityId, Entity.RemovalReason removalReason, CallbackInfo ci) {
         if(Module.fullNullCheck()) return;
         EventEntityRemoved eer = new EventEntityRemoved(mc.world.getEntityById(entityId));
-        ThunderHack.EVENT_BUS.post(eer);
+        HolyFacker.EVENT_BUS.post(eer);
     }
 
     @Inject(method = "getSkyColor", at = @At("HEAD"), cancellable = true)

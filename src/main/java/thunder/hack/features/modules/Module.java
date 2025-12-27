@@ -13,7 +13,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
 import thunder.hack.core.manager.client.CommandManager;
 import thunder.hack.core.manager.client.ModuleManager;
@@ -27,7 +27,7 @@ import thunder.hack.setting.impl.Bind;
 import java.lang.reflect.Field;
 import java.util.*;
 
-import static thunder.hack.ThunderHack.LOGGER;
+import static thunder.hack.HolyFacker.LOGGER;
 import static thunder.hack.core.Managers.NOTIFICATION;
 import static thunder.hack.features.modules.client.ClientSettings.isRu;
 
@@ -91,7 +91,7 @@ public abstract class Module {
 
     protected void sendPacketSilent(Packet<?> packet) {
         if (mc.getNetworkHandler() == null) return;
-        ThunderHack.core.silentPackets.add(packet);
+        HolyFacker.core.silentPackets.add(packet);
         mc.getNetworkHandler().sendPacket(packet);
     }
 
@@ -129,10 +129,10 @@ public abstract class Module {
         if (!fullNullCheck() || (this instanceof UnHook) || (this instanceof Windows))
             onEnable();
 
-        if (isOn()) ThunderHack.EVENT_BUS.subscribe(this);
+        if (isOn()) HolyFacker.EVENT_BUS.subscribe(this);
         if (fullNullCheck()) return;
 
-        LogUtils.getLogger().info("[ThunderHack] enabled " + this.getName());
+        LogUtils.getLogger().info("[HolyFacker] enabled " + this.getName());
         Managers.MODULE.sortModules();
 
         if (!ignoreSoundList.contains(getDisplayName())) {
@@ -151,7 +151,7 @@ public abstract class Module {
      */
     public void disable() {
         try {
-            ThunderHack.EVENT_BUS.unsubscribe(this);
+            HolyFacker.EVENT_BUS.unsubscribe(this);
         } catch (Exception ignored) {
         }
 
@@ -163,7 +163,7 @@ public abstract class Module {
 
         onDisable();
 
-        LOGGER.info("[ThunderHack] disabled {}", getName());
+        LOGGER.info("[HolyFacker] disabled {}", getName());
 
         if (!ignoreSoundList.contains(getDisplayName())) {
             NOTIFICATION.publicity(getDisplayName(), isRu() ? "Модуль выключен!" : "Was Disabled!", 2, Notification.Type.DISABLED);

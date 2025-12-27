@@ -4,7 +4,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.command.CommandSource;
 import org.jetbrains.annotations.NotNull;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
 import thunder.hack.features.cmd.Command;
 import thunder.hack.features.cmd.args.FriendArgumentType;

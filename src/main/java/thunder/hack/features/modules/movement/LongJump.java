@@ -4,7 +4,7 @@ import meteordevelopment.orbit.EventHandler;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
 import net.minecraft.util.math.Vec3d;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.events.impl.EventMove;
 import thunder.hack.events.impl.EventSync;
 import thunder.hack.events.impl.PacketEvent;
@@ -36,7 +36,7 @@ public class LongJump extends Module {
 
         if (MovementUtility.isMoving()) {
             if (useTimer.getValue())
-                ThunderHack.TICK_TIMER = timerValue.getValue();
+                HolyFacker.TICK_TIMER = timerValue.getValue();
 
             switch (stage) {
                 case 0 -> {
@@ -90,7 +90,7 @@ public class LongJump extends Module {
 
     public void resetValues() {
         prevPosition = mc.player.getPos();
-        ThunderHack.TICK_TIMER = 1f;
+        HolyFacker.TICK_TIMER = 1f;
         plannedSpeed = 0;
         realSpeed = 0;
         stage = 0;

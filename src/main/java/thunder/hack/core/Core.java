@@ -21,7 +21,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec2f;
 import org.jetbrains.annotations.NotNull;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.features.cmd.Command;
 import thunder.hack.core.manager.client.MacroManager;
 import thunder.hack.core.manager.client.ModuleManager;
@@ -71,7 +71,7 @@ public final class Core {
 
         for (PlayerEntity p : mc.world.getPlayers()) {
             if (p.isDead() || p.getHealth() == 0)
-                ThunderHack.EVENT_BUS.post(new EventDeath(p));
+                HolyFacker.EVENT_BUS.post(new EventDeath(p));
         }
 
         if (!Objects.equals(Managers.COMMAND.getPrefix(), ClientSettings.prefix.getValue()))
@@ -166,11 +166,11 @@ public final class Core {
     }
 
     public void drawGps(DrawContext e) {
-        if (ThunderHack.gps_position != null) {
-            float dst = getDistance(ThunderHack.gps_position);
+        if (HolyFacker.gps_position != null) {
+            float dst = getDistance(HolyFacker.gps_position);
             float xOffset = mc.getWindow().getScaledWidth() / 2f;
             float yOffset = mc.getWindow().getScaledHeight() / 2f;
-            float yaw = getRotations(new Vec2f(ThunderHack.gps_position.getX(), ThunderHack.gps_position.getZ())) - mc.player.getYaw();
+            float yaw = getRotations(new Vec2f(HolyFacker.gps_position.getX(), HolyFacker.gps_position.getZ())) - mc.player.getYaw();
             e.getMatrices().translate(xOffset, yOffset, 0.0F);
             e.getMatrices().multiply(RotationAxis.POSITIVE_Z.rotationDegrees(yaw));
             e.getMatrices().translate(-xOffset, -yOffset, 0.0F);
@@ -182,7 +182,7 @@ public final class Core {
             FontRenderers.modules.drawCenteredString(e.getMatrices(), "gps (" + dst + "m)", (float) (Math.sin(Math.toRadians(yaw)) * 50f) + xOffset, (float) (yOffset - (Math.cos(Math.toRadians(yaw)) * 50f)) - 23, -1);
 
             if (dst < 10)
-                ThunderHack.gps_position = null;
+                HolyFacker.gps_position = null;
         }
     }
 

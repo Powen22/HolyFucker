@@ -19,7 +19,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.events.impl.*;
@@ -65,7 +65,7 @@ public class Speed extends Module {
 
     @Override
     public void onDisable() {
-        ThunderHack.TICK_TIMER = 1f;
+        HolyFacker.TICK_TIMER = 1f;
     }
 
     @Override
@@ -93,11 +93,11 @@ public class Speed extends Module {
                 }
 
             if (MovementUtility.isMoving() && closeToGround && mc.player.fallDistance <= 0) {
-                ThunderHack.TICK_TIMER = 1f;
+                HolyFacker.TICK_TIMER = 1f;
                 mc.player.setOnGround(true);
                 mc.player.jump();
             } else if (mc.player.fallDistance > 0 && useTimer.getValue()) {
-                ThunderHack.TICK_TIMER = matrixJBSpeed.getValue();
+                HolyFacker.TICK_TIMER = matrixJBSpeed.getValue();
                 mc.player.addVelocity(0f, -0.003f, 0f);
             }
         }
@@ -110,7 +110,7 @@ public class Speed extends Module {
             // Grim checks movement predictions very carefully
             // We use very subtle friction modifications that look natural
             
-            BlockPos pos = ((IEntity) mc.player).thunderHack_Recode$getVelocityBP();
+            BlockPos pos = ((IEntity) mc.player).holyFacker_Recode$getVelocityBP();
             float slipperiness = mc.world.getBlockState(pos).getBlock().getSlipperiness();
             
             // Only apply on certain blocks to avoid patterns
@@ -136,7 +136,7 @@ public class Speed extends Module {
             }
         }
         
-        if (mode.getValue() == Mode.GrimEntity && !e.isPre() && ThunderHack.core.getSetBackTime() > 1000 && MovementUtility.isMoving()) {
+        if (mode.getValue() == Mode.GrimEntity && !e.isPre() && HolyFacker.core.getSetBackTime() > 1000 && MovementUtility.isMoving()) {
             // Improved GrimEntity bypass - more subtle and natural entity collision simulation
             // Grim expands player bounding box by 0.2 and checks for collisions
             Box expandedBox = mc.player.getBoundingBox().expand(0.2);
@@ -160,7 +160,7 @@ public class Speed extends Module {
                 double boost = distanceFactor * baseBoost * (0.85 + Math.random() * 0.3); // Randomize 85-115%
                 
                 // Get block slipperiness for accurate friction
-                BlockPos pos = ((IEntity) mc.player).thunderHack_Recode$getVelocityBP();
+                BlockPos pos = ((IEntity) mc.player).holyFacker_Recode$getVelocityBP();
                 float slipperiness = mc.world.getBlockState(pos).getBlock().getSlipperiness();
                 
                 // Apply very subtle velocity modification
@@ -194,7 +194,7 @@ public class Speed extends Module {
             }
         }
 
-        if ((mode.is(Mode.GrimEntity2) || mode.is(Mode.GrimCombo)) && !e.isPre() && ThunderHack.core.getSetBackTime() > 1000 && MovementUtility.isMoving()) {
+        if ((mode.is(Mode.GrimEntity2) || mode.is(Mode.GrimCombo)) && !e.isPre() && HolyFacker.core.getSetBackTime() > 1000 && MovementUtility.isMoving()) {
             // Improved GrimEntity2 - more subtle collision-based boost
             Box expandedBox = mc.player.getBoundingBox().expand(0.2); // Grim's expansion
             int collisions = 0;
@@ -235,7 +235,7 @@ public class Speed extends Module {
     public void onTick(EventTick e) {
         //first author: Delyfss
         if ((mode.is(Mode.GrimIce) || mode.is(Mode.GrimCombo)) && mc.player.isOnGround()) {
-            BlockPos pos = ((IEntity) mc.player).thunderHack_Recode$getVelocityBP();
+            BlockPos pos = ((IEntity) mc.player).holyFacker_Recode$getVelocityBP();
             SearchInvResult result = InventoryUtility.findBlockInHotBar(Blocks.ICE, Blocks.PACKED_ICE, Blocks.BLUE_ICE);
             if (mc.world.isAir(pos) || !result.found() || !mc.options.jumpKey.isPressed())
                 return;
@@ -354,7 +354,7 @@ public class Speed extends Module {
             // Grim uses prediction engine, so we need extremely subtle changes
             // Use friction modification instead of direct speed changes
             
-            BlockPos pos = ((IEntity) mc.player).thunderHack_Recode$getVelocityBP();
+            BlockPos pos = ((IEntity) mc.player).holyFacker_Recode$getVelocityBP();
             float slipperiness = mc.world.getBlockState(pos).getBlock().getSlipperiness();
             
             Vec3d velocity = mc.player.getVelocity();
@@ -389,7 +389,7 @@ public class Speed extends Module {
         event.cancel();
 
         if (MovementUtility.isMoving()) {
-            ThunderHack.TICK_TIMER = useTimer.getValue() ? 1.088f : 1f;
+            HolyFacker.TICK_TIMER = useTimer.getValue() ? 1.088f : 1f;
             float currentSpeed = mode.getValue() == Mode.NCP && mc.player.input.movementForward <= 0 && prevForward > 0 ? Managers.PLAYER.currentPlayerSpeed * 0.66f : Managers.PLAYER.currentPlayerSpeed;
             boolean canJump = !mc.player.horizontalCollision;
 
@@ -432,7 +432,7 @@ public class Speed extends Module {
             MovementUtility.modifyEventSpeed(event, baseSpeed);
             prevForward = mc.player.input.movementForward;
         } else {
-            ThunderHack.TICK_TIMER = 1f;
+            HolyFacker.TICK_TIMER = 1f;
             event.setX(0);
             event.setZ(0);
         }

@@ -6,7 +6,7 @@ public class Texture {
     final Identifier id;
 
     public Texture(String path) {
-        id = Identifier.of("thunderhack", validatePath(path));
+        id = Identifier.of("holyfacker", validatePath(path));
     }
 
     public Texture(Identifier i) {

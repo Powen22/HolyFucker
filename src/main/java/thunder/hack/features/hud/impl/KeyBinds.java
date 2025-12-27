@@ -37,7 +37,7 @@ public class KeyBinds extends HudElement {
         float pointerX = 0;
         for (Module feature : Managers.MODULE.modules) {
             if (feature.isDisabled() && onlyEnabled.getValue()) continue;
-            if (!Objects.equals(feature.getBind().getBind(), "None") && feature != ModuleManager.clickGui && feature != ModuleManager.thunderHackGui) {
+            if (!Objects.equals(feature.getBind().getBind(), "None") && feature != ModuleManager.clickGui && feature != ModuleManager.holyFackerGui) {
                 if (y_offset1 == 0)
                     y_offset1 += 4;
 
@@ -83,7 +83,7 @@ public class KeyBinds extends HudElement {
         for (Module feature : Managers.MODULE.modules) {
             if (feature.isDisabled() && onlyEnabled.getValue())
                 continue;
-            if (!Objects.equals(feature.getBind().getBind(), "None") && feature != ModuleManager.clickGui && feature != ModuleManager.thunderHackGui) {
+            if (!Objects.equals(feature.getBind().getBind(), "None") && feature != ModuleManager.clickGui && feature != ModuleManager.holyFackerGui) {
                 FontRenderers.sf_bold_mini.drawString(context.getMatrices(), feature.getName(), getPosX() + 5, getPosY() + 19 + y_offset, feature.isOn() ? oncolor.getValue().getColor() : offcolor.getValue().getColor());
                 FontRenderers.sf_bold_mini.drawCenteredString(context.getMatrices(),  getShortKeyName(feature),
 

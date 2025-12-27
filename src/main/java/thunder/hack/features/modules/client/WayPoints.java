@@ -5,7 +5,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Vector4d;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
 import thunder.hack.core.manager.world.WayPointManager;
 import thunder.hack.gui.font.FontRenderers;

@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.Core;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.events.impl.*;
@@ -45,7 +45,7 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
     @Inject(method = "tick", at = @At("HEAD"))
     public void tickHook(CallbackInfo info) {
         if(Module.fullNullCheck()) return;
-        ThunderHack.EVENT_BUS.post(new PlayerUpdateEvent());
+        HolyFacker.EVENT_BUS.post(new PlayerUpdateEvent());
     }
 
     @Redirect(method = "tickMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z"), require = 0)
@@ -72,7 +72,7 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
     public void onMoveHook(MovementType movementType, Vec3d movement, CallbackInfo ci) {
         if(Module.fullNullCheck()) return;
         EventMove event = new EventMove(movement.x, movement.y, movement.z);
-        ThunderHack.EVENT_BUS.post(event);
+        HolyFacker.EVENT_BUS.post(event);
         if (event.isCancelled()) {
             super.move(movementType, new Vec3d(event.getX(), event.getY(), event.getZ()));
             ci.cancel();
@@ -83,11 +83,11 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
     private void sendMovementPacketsHook(CallbackInfo info) {
         if (fullNullCheck()) return;
         EventSync event = new EventSync(getYaw(), getPitch());
-        ThunderHack.EVENT_BUS.post(event);
+        HolyFacker.EVENT_BUS.post(event);
         postAction = event.getPostAction();
         EventSprint e = new EventSprint(isSprinting());
-        ThunderHack.EVENT_BUS.post(e);
-        ThunderHack.EVENT_BUS.post(new EventAfterRotate());
+        HolyFacker.EVENT_BUS.post(e);
+        HolyFacker.EVENT_BUS.post(new EventAfterRotate());
         if (e.getSprintState() != mc.player.lastSprinting) {
             if (e.getSprintState())
                 mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(this, ClientCommandC2SPacket.Mode.START_SPRINTING));
@@ -108,7 +108,7 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
         mc.player.lastSprinting = pre_sprint_state;
         Core.lockSprint = false;
         EventPostSync event = new EventPostSync();
-        ThunderHack.EVENT_BUS.post(event);
+        HolyFacker.EVENT_BUS.post(event);
         if(postAction != null) {
             postAction.run();
             postAction = null;
@@ -124,7 +124,7 @@ public abstract class MixinClientPlayerEntity extends AbstractClientPlayerEntity
             return;
         }
         PostPlayerUpdateEvent playerUpdateEvent = new PostPlayerUpdateEvent();
-        ThunderHack.EVENT_BUS.post(playerUpdateEvent);
+        HolyFacker.EVENT_BUS.post(playerUpdateEvent);
         if (playerUpdateEvent.isCancelled()) {
             info.cancel();
             if (playerUpdateEvent.getIterations() > 0) {

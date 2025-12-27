@@ -1,0 +1,92 @@
+{
+  "keypress": {
+    "sounds": [
+      "holyfacker:keypress"
+    ]
+  },
+  "keyrelease": {
+    "sounds": [
+      "holyfacker:keyrelease"
+    ]
+  },
+  "uwu": {
+    "sounds": [
+      "holyfacker:uwu"
+    ]
+  },
+  "disable": {
+    "sounds": [
+      "holyfacker:disable"
+    ]
+  },
+  "enable": {
+    "sounds": [
+      "holyfacker:enable"
+    ]
+  },
+  "moan1": {
+    "sounds": [
+      "holyfacker:moan1"
+    ]
+  },
+  "moan2": {
+    "sounds": [
+      "holyfacker:moan2"
+    ]
+  },
+  "moan3": {
+    "sounds": [
+      "holyfacker:moan3"
+    ]
+  },
+  "moan4": {
+    "sounds": [
+      "holyfacker:moan4"
+    ]
+  },
+  "skeet": {
+    "sounds": [
+      "holyfacker:skeet"
+    ]
+  },
+  "orthodox": {
+    "sounds": [
+      "holyfacker:orthodox"
+    ]
+  },
+  "boolean": {
+    "sounds": [
+      "holyfacker:boolean"
+    ]
+  },
+  "scroll": {
+    "sounds": [
+      "holyfacker:scroll"
+    ]
+  },
+  "swipein": {
+    "sounds": [
+      "holyfacker:swipein"
+    ]
+  },
+  "swipeout": {
+    "sounds": [
+      "holyfacker:swipeout"
+    ]
+  },
+  "pmsound": {
+    "sounds": [
+      "holyfacker:pmsound"
+    ]
+  },
+  "rifk": {
+    "sounds": [
+      "holyfacker:rifk"
+    ]
+  },
+  "cutie": {
+    "sounds": [
+      "holyfacker:cutie"
+    ]
+  }
+}

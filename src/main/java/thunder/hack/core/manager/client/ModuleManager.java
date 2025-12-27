@@ -3,7 +3,7 @@ package thunder.hack.core.manager.client;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import org.lwjgl.glfw.GLFW;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.manager.IManager;
 import thunder.hack.gui.clickui.ClickGUI;
 import thunder.hack.gui.font.FontRenderers;
@@ -42,7 +42,7 @@ public class ModuleManager implements IManager {
     public static ChatTranslator chatTranslator = new ChatTranslator();
     public static PacketCanceler packetCanceler = new PacketCanceler();
     public static ClientSettings clientSettings = new ClientSettings();
-    public static ThunderHackGui thunderHackGui = new ThunderHackGui();
+    public static HolyFackerGui holyFackerGui = new HolyFackerGui();
     public static NoServerRotate noServerRotate = new NoServerRotate();
     public static BreakHighLight breakHighLight = new BreakHighLight();
     public static BlockHighLight blockHighLight = new BlockHighLight();
@@ -232,7 +232,7 @@ public class ModuleManager implements IManager {
 
     public void onLoad(String category) {
         try {
-            ThunderHack.EVENT_BUS.unsubscribe(unHook);
+            HolyFacker.EVENT_BUS.unsubscribe(unHook);
         } catch (Exception ignored) {
         }
         unHook.setEnabled(false);
@@ -241,7 +241,7 @@ public class ModuleManager implements IManager {
 
         modules.forEach(m -> {
             if (m.isEnabled() && (m.getCategory().getName().equalsIgnoreCase(category) || category.equals("none")))
-                ThunderHack.EVENT_BUS.subscribe(m);
+                HolyFacker.EVENT_BUS.subscribe(m);
         });
 
         if (ConfigManager.firstLaunch) {
@@ -264,7 +264,7 @@ public class ModuleManager implements IManager {
             if (GLFW.glfwGetPlatform() != GLFW.GLFW_PLATFORM_WAYLAND) {
                 GLFW.glfwSetCursor(mc.getWindow().getHandle(), GLFW.glfwCreateStandardCursor(GLFW.GLFW_ARROW_CURSOR));
             }
-        ThunderHack.core.onRender2D(context);
+        HolyFacker.core.onRender2D(context);
     }
 
     public void onRender3D(MatrixStack stack) {
@@ -286,7 +286,7 @@ public class ModuleManager implements IManager {
     public void onUnload(String category) {
         modules.forEach(module -> {
             if (module.isEnabled() && (module.getCategory().getName().equalsIgnoreCase(category) || category.equals("none"))) {
-                ThunderHack.EVENT_BUS.unsubscribe(module);
+                HolyFacker.EVENT_BUS.unsubscribe(module);
                 module.setEnabled(false);
             }
         });
@@ -352,7 +352,7 @@ public class ModuleManager implements IManager {
         this.modules.add(module);
 
         if (module.isEnabled())
-            ThunderHack.EVENT_BUS.subscribe(module);
+            HolyFacker.EVENT_BUS.subscribe(module);
     }
 
     public void registerHudElement(HudElement hudElement) {

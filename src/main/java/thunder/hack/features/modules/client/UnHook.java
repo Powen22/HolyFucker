@@ -62,7 +62,7 @@ public class UnHook extends Module { // Йо фабос, засунь в о4ко
                     ArrayList<String> lines = new ArrayList<>();
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        if(line.contains("thunderhack") || line.contains("ThunderHack") || line.contains("$$") || line.contains("\\______/")
+                        if(line.contains("holyfacker") || line.contains("HolyFacker") || line.contains("$$") || line.contains("\\______/")
                                 || line.contains("By pan4ur, 06ED") || line.contains("\u26A1") || line.contains("thunder.hack"))
                             continue;
                         lines.add(line);
@@ -96,7 +96,7 @@ public class UnHook extends Module { // Йо фабос, засунь в о4ко
 
         // Rename cfg dir back
         try {
-            new File("XaeroWaypoints_BACKUP092738").renameTo(new File("ThunderHackRecode"));
+            new File("XaeroWaypoints_BACKUP092738").renameTo(new File("HolyFackerRecode"));
         } catch (Exception e) {
         }
     }

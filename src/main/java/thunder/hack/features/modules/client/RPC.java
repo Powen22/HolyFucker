@@ -3,7 +3,7 @@ package thunder.hack.features.modules.client;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.multiplayer.AddServerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
 import thunder.hack.features.modules.Module;
 import thunder.hack.setting.Setting;
@@ -40,7 +40,7 @@ public final class RPC extends Module {
 
     public static void readFile() {
         try {
-            File file = new File("ThunderHackRecode/misc/RPC.txt");
+            File file = new File("HolyFackerRecode/misc/RPC.txt");
             if (file.exists()) {
                 try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                     while (reader.ready()) {
@@ -53,7 +53,7 @@ public final class RPC extends Module {
     }
 
     public static void WriteFile(String url1, String url2) {
-        File file = new File("ThunderHackRecode/misc/RPC.txt");
+        File file = new File("HolyFackerRecode/misc/RPC.txt");
         try {
             file.createNewFile();
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
@@ -85,7 +85,7 @@ public final class RPC extends Module {
             DiscordEventHandlers handlers = new DiscordEventHandlers();
             rpc.Discord_Initialize("1093053626198523935", handlers, true, "");
             presence.startTimestamp = (System.currentTimeMillis() / 1000L);
-            presence.largeImageText = "v" + ThunderHack.VERSION + " [" + ThunderHack.GITHUB_HASH + "]";
+            presence.largeImageText = "v" + HolyFacker.VERSION + " [" + HolyFacker.GITHUB_HASH + "]";
             rpc.Discord_UpdatePresence(presence);
 
             thread = new Thread(() -> {
@@ -97,7 +97,7 @@ public final class RPC extends Module {
                         case Stats ->
                                 presence.state = "Hacks: " + Managers.MODULE.getEnabledModules().size() + " / " + Managers.MODULE.modules.size();
                         case Custom -> presence.state = state.getValue();
-                        case Version -> presence.state = "v" + ThunderHack.VERSION +" for mc 1.21";
+                        case Version -> presence.state = "v" + HolyFacker.VERSION +" for mc 1.21";
                     }
 
                     if (nickname.getValue()) {
@@ -108,8 +108,7 @@ public final class RPC extends Module {
                         presence.smallImageKey = "";
                     }
 
-                    presence.button_label_1 = "Download";
-                    presence.button_url_1 = "https://github.com/Pan4ur/ThunderHack-Recode/";
+                    // Removed external repository link - button removed
 
                     switch (mode.getValue()) {
                         case Recode -> presence.largeImageKey = "https://i.imgur.com/yY0z2Uq.gif";

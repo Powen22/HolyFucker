@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static thunder.hack.ThunderHack.LOGGER;
+import static thunder.hack.HolyFacker.LOGGER;
 
 public class NotificationManager implements IManager {
     private final List<Notification> notifications = new ArrayList<>();
@@ -75,9 +75,9 @@ public class NotificationManager implements IManager {
                     final SystemTray tray = SystemTray.getSystemTray();
                     final Image image = Toolkit.getDefaultToolkit().createImage("resources/icon.png");
 
-                    trayIcon = new TrayIcon(image, "ThunderHack");
+                    trayIcon = new TrayIcon(image, "HolyFacker");
                     trayIcon.setImageAutoSize(true);
-                    trayIcon.setToolTip("ThunderHack");
+                    trayIcon.setToolTip("HolyFacker");
                     tray.add(trayIcon);
                 }
 
@@ -92,7 +92,7 @@ public class NotificationManager implements IManager {
 
     private void mac(final String message) {
         final ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command("osascript", "-e", "display notification \"" + message + "\" with title \"ThunderHack\"");
+        processBuilder.command("osascript", "-e", "display notification \"" + message + "\" with title \"HolyFacker\"");
         try {
             processBuilder.start();
         } catch (IOException e) {
@@ -102,7 +102,7 @@ public class NotificationManager implements IManager {
 
     private void linux(final String message) {
         final ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command("notify-send", "-a", "ThunderHack", message);
+        processBuilder.command("notify-send", "-a", "HolyFacker", message);
 
         try {
             processBuilder.start();

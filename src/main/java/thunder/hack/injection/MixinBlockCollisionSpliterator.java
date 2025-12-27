@@ -7,7 +7,7 @@ import net.minecraft.world.BlockView;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.events.impl.EventCollision;
 
@@ -20,7 +20,7 @@ public abstract class MixinBlockCollisionSpliterator {
         if(!ModuleManager.phase.isEnabled() && !ModuleManager.jesus.isEnabled())
             return instance.getBlockState(blockPos);
         EventCollision event = new EventCollision(instance.getBlockState(blockPos), blockPos);
-        ThunderHack.EVENT_BUS.post(event);
+        HolyFacker.EVENT_BUS.post(event);
         return event.getState();
     }
 }

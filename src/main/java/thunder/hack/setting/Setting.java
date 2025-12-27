@@ -1,6 +1,6 @@
 package thunder.hack.setting;
 
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.events.impl.EventSetting;
 import thunder.hack.features.modules.Module;
 import thunder.hack.setting.impl.*;
@@ -76,7 +76,7 @@ public class Setting<T> {
 
     public void setValue(T value) {
         setValueSilent(value);
-        ThunderHack.EVENT_BUS.post(new EventSetting(this));
+        HolyFacker.EVENT_BUS.post(new EventSetting(this));
     }
 
     public void setValueSilent(T value) {
@@ -147,14 +147,14 @@ public class Setting<T> {
     public void increaseEnum() {
         plannedValue = (T) EnumConverter.increaseEnum((Enum) value);
         value = plannedValue;
-        ThunderHack.EVENT_BUS.post(new EventSetting(this));
+        HolyFacker.EVENT_BUS.post(new EventSetting(this));
     }
 
     @SuppressWarnings("unchecked")
     public void setEnumByNumber(int id) {
         plannedValue = (T) EnumConverter.setEnumInt((Enum) value, id);
         value = plannedValue;
-        ThunderHack.EVENT_BUS.post(new EventSetting(this));
+        HolyFacker.EVENT_BUS.post(new EventSetting(this));
     }
 
     public boolean isNumberSetting() {

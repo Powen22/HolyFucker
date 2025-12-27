@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
 import net.minecraft.util.Identifier;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.features.modules.Module;
 import thunder.hack.features.modules.client.BaritoneSettings;
@@ -31,13 +31,13 @@ public class Category extends AbstractCategory {
     public Category(Module.Category category, ArrayList<Module> features, float x, float y, float width, float height) {
         super(category.getName(), x, y, width, height);
         buttons = new ArrayList<>();
-        ICON = Identifier.of("thunderhack", "textures/gui/headers/" + (Module.Category.isCustomCategory(category) ? "stock" : category.getName().toLowerCase()) + ".png");
+        ICON = Identifier.of("holyfacker", "textures/gui/headers/" + (Module.Category.isCustomCategory(category) ? "stock" : category.getName().toLowerCase()) + ".png");
 
         if (category.getName().equals("Client"))
             buttons.add(new SearchBar());
 
         features.forEach(feature -> {
-            if (!(feature instanceof BaritoneSettings) || ThunderHack.baritone)
+            if (!(feature instanceof BaritoneSettings) || HolyFacker.baritone)
                 buttons.add(new ModuleButton(feature));
         });
     }

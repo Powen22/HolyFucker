@@ -1,7 +1,7 @@
 package thunder.hack.gui.font;
 
 import org.jetbrains.annotations.NotNull;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 
 import java.awt.*;
 import java.io.IOException;
@@ -31,6 +31,6 @@ public class FontRenderers {
     }
 
     public static @NotNull FontRenderer create(float size, String name) throws IOException, FontFormatException {
-        return new FontRenderer(Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(ThunderHack.class.getClassLoader().getResourceAsStream("assets/thunderhack/fonts/" + name + ".ttf"))).deriveFont(Font.PLAIN, size / 2f), size / 2f);
+        return new FontRenderer(Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(HolyFacker.class.getClassLoader().getResourceAsStream("assets/holyfacker/fonts/" + name + ".ttf"))).deriveFont(Font.PLAIN, size / 2f), size / 2f);
     }
 }

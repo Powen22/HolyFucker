@@ -8,5 +8,5 @@ import java.util.List;
 public interface IEntity {
     List<Trails.Trail> getTrails();
 
-    BlockPos thunderHack_Recode$getVelocityBP();
+    BlockPos holyFacker_Recode$getVelocityBP();
 }

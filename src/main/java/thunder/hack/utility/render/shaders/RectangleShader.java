@@ -24,7 +24,7 @@ public class RectangleShader {
     private Uniform4f color4;
 
     public static final ManagedCoreShader RECTANGLE_SHADER = ShaderEffectManager.getInstance()
-            .manageCoreShader(Identifier.of("thunderhack", "rectangle"), VertexFormats.POSITION);
+            .manageCoreShader(Identifier.of("holyfacker", "rectangle"), VertexFormats.POSITION);
 
     public RectangleShader() {
         setup();

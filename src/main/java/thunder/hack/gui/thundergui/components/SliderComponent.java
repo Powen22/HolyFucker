@@ -3,7 +3,7 @@ package thunder.hack.gui.thundergui.components;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.gui.font.FontRenderers;
 import thunder.hack.gui.thundergui.ThunderGui;
 import thunder.hack.setting.Setting;
@@ -107,7 +107,7 @@ public class SliderComponent extends SettingElement {
         }
 
         if (listening)
-            ThunderHack.currentKeyListener = ThunderHack.KeyListening.Sliders;
+            HolyFacker.currentKeyListener = HolyFacker.KeyListening.Sliders;
     }
 
     @Override
@@ -124,7 +124,7 @@ public class SliderComponent extends SettingElement {
 
     @Override
     public void keyTyped(String typedChar, int keyCode) {
-        if (ThunderHack.currentKeyListener != ThunderHack.KeyListening.Sliders)
+        if (HolyFacker.currentKeyListener != HolyFacker.KeyListening.Sliders)
             return;
 
         if (this.listening) {

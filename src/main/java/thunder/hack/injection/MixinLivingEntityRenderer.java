@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.injection.accesors.IClientPlayerEntity;
@@ -53,7 +53,7 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity, M extend
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     public void onRenderPre(T livingEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
         if (Module.fullNullCheck()) return;
-        if (mc.player != null && livingEntity == mc.player && mc.player.getControllingVehicle() == null && ClientSettings.renderRotations.getValue() && !ThunderHack.isFuturePresent()) {
+        if (mc.player != null && livingEntity == mc.player && mc.player.getControllingVehicle() == null && ClientSettings.renderRotations.getValue() && !HolyFacker.isFuturePresent()) {
             originalHeadYaw = livingEntity.headYaw;
             originalPrevHeadYaw = livingEntity.prevHeadYaw;
             originalPrevHeadPitch = livingEntity.prevPitch;
@@ -138,7 +138,7 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity, M extend
     @Unique
     public void postRender(T livingEntity) {
         if (Module.fullNullCheck()) return;
-        if (mc.player != null && livingEntity == mc.player && mc.player.getControllingVehicle() == null && ClientSettings.renderRotations.getValue() && !ThunderHack.isFuturePresent()) {
+        if (mc.player != null && livingEntity == mc.player && mc.player.getControllingVehicle() == null && ClientSettings.renderRotations.getValue() && !HolyFacker.isFuturePresent()) {
             livingEntity.prevPitch = originalPrevHeadPitch;
             livingEntity.setPitch(originalHeadPitch);
             livingEntity.headYaw = originalHeadYaw;

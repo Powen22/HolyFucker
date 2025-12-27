@@ -6,7 +6,7 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.command.CommandSource;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
 import thunder.hack.features.cmd.Command;
 import thunder.hack.features.cmd.args.MacroArgumentType;

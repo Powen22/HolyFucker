@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.events.impl.EventFixVelocity;
 import thunder.hack.features.modules.Module;
@@ -44,7 +44,7 @@ public abstract class MixinEntity implements IEntity {
     }
 
     @Override
-    public BlockPos thunderHack_Recode$getVelocityBP() {
+    public BlockPos holyFacker_Recode$getVelocityBP() {
         return getVelocityAffectingPos();
     }
 
@@ -68,7 +68,7 @@ public abstract class MixinEntity implements IEntity {
         if ((Object) this == mc.player) {
             ci.cancel();
             EventFixVelocity event = new EventFixVelocity(movementInput, speed, mc.player.getYaw(), movementInputToVelocityC(movementInput, speed, mc.player.getYaw()));
-            ThunderHack.EVENT_BUS.post(event);
+            HolyFacker.EVENT_BUS.post(event);
             mc.player.setVelocity(mc.player.getVelocity().add(event.getVelocity()));
         }
     }

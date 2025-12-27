@@ -68,7 +68,7 @@ public class Nuker extends Module {
     @Override
     public void onEnable() {
         nukerThread = new NukerThread();
-        nukerThread.setName("ThunderHack-NukerThread");
+        nukerThread.setName("HolyFacker-NukerThread");
         nukerThread.setDaemon(true);
         nukerThread.start();
     }
@@ -82,7 +82,7 @@ public class Nuker extends Module {
     public void onUpdate() {
         if (!nukerThread.isAlive()) {
             nukerThread = new NukerThread();
-            nukerThread.setName("ThunderHack-NukerThread");
+            nukerThread.setName("HolyFacker-NukerThread");
             nukerThread.setDaemon(true);
             nukerThread.start();
         }

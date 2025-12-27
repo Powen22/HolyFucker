@@ -1,6 +1,6 @@
 package thunder.hack.injection;
 
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
 import thunder.hack.events.impl.EventKeyPress;
 import thunder.hack.events.impl.EventKeyRelease;
@@ -31,12 +31,12 @@ public class MixinKeyboard {
         switch (action) {
             case 0 -> {
                 EventKeyRelease event = new EventKeyRelease(key, scanCode);
-                ThunderHack.EVENT_BUS.post(event);
+                HolyFacker.EVENT_BUS.post(event);
                 if (event.isCancelled()) ci.cancel();
             }
             case 1 -> {
                 EventKeyPress event = new EventKeyPress(key, scanCode);
-                ThunderHack.EVENT_BUS.post(event);
+                HolyFacker.EVENT_BUS.post(event);
                 if (event.isCancelled()) ci.cancel();
             }
         }

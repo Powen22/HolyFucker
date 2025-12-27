@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.features.modules.client.ClientSettings;
 
@@ -29,7 +29,7 @@ public class MixinPlayerListHud {
         if (ClientSettings.futureCompatibility.getValue())
             return;
 
-        if (ThunderHack.isFuturePresent())
+        if (HolyFacker.isFuturePresent())
             return;
 
         if (ModuleManager.extraTab.isEnabled())

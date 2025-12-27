@@ -5,7 +5,7 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.network.packet.c2s.play.CloseHandledScreenC2SPacket;
 import net.minecraft.screen.slot.SlotActionType;
 import org.jetbrains.annotations.NotNull;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.features.cmd.Command;
 
 import static com.mojang.brigadier.Command.SINGLE_SUCCESS;

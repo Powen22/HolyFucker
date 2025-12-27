@@ -5,7 +5,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.handler.proxy.Socks5ProxyHandler;
 
 import net.minecraft.network.packet.s2c.play.BundleS2CPacket;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.core.manager.client.ProxyManager;
@@ -40,14 +40,14 @@ public class MixinClientConnection {
         if (packet instanceof BundleS2CPacket packs) {
             packs.getPackets().forEach(p -> {
                 PacketEvent.Receive event = new PacketEvent.Receive(p);
-                ThunderHack.EVENT_BUS.post(event);
+                HolyFacker.EVENT_BUS.post(event);
                 if (event.isCancelled()) {
                     info.cancel();
                 }
             });
         } else {
             PacketEvent.Receive event = new PacketEvent.Receive(packet);
-            ThunderHack.EVENT_BUS.post(event);
+            HolyFacker.EVENT_BUS.post(event);
             if (event.isCancelled()) {
                 info.cancel();
             }
@@ -61,14 +61,14 @@ public class MixinClientConnection {
         if (packet instanceof BundleS2CPacket packs) {
             packs.getPackets().forEach(p -> {
                 PacketEvent.ReceivePost event = new PacketEvent.ReceivePost(p);
-                ThunderHack.EVENT_BUS.post(event);
+                HolyFacker.EVENT_BUS.post(event);
                 if (event.isCancelled()) {
                     info.cancel();
                 }
             });
         } else {
             PacketEvent.ReceivePost event = new PacketEvent.ReceivePost(packet);
-            ThunderHack.EVENT_BUS.post(event);
+            HolyFacker.EVENT_BUS.post(event);
             if (event.isCancelled()) {
                 info.cancel();
             }
@@ -78,13 +78,13 @@ public class MixinClientConnection {
     @Inject(method = "send(Lnet/minecraft/network/packet/Packet;)V", at = @At("HEAD"),cancellable = true)
     private void onSendPacketPre(Packet<?> packet, CallbackInfo info) {
         if(Module.fullNullCheck()) return;
-        if(ThunderHack.core.silentPackets.contains(packet)) {
-            ThunderHack.core.silentPackets.remove(packet);
+        if(HolyFacker.core.silentPackets.contains(packet)) {
+            HolyFacker.core.silentPackets.remove(packet);
             return;
         }
 
         PacketEvent.Send event = new PacketEvent.Send(packet);
-        ThunderHack.EVENT_BUS.post(event);
+        HolyFacker.EVENT_BUS.post(event);
         if (event.isCancelled()) info.cancel();
     }
 
@@ -92,7 +92,7 @@ public class MixinClientConnection {
     private void onSendPacketPost(Packet<?> packet, CallbackInfo info) {
         if(Module.fullNullCheck()) return;
         PacketEvent.SendPost event = new PacketEvent.SendPost(packet);
-        ThunderHack.EVENT_BUS.post(event);
+        HolyFacker.EVENT_BUS.post(event);
         if (event.isCancelled()) info.cancel();
     }
 

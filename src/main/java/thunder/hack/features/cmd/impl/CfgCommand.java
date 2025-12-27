@@ -5,7 +5,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.command.CommandSource;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
 import thunder.hack.features.cmd.Command;
 import thunder.hack.features.cmd.args.CategoryArgumentType;
@@ -47,7 +47,7 @@ public class CfgCommand extends Command {
 
         builder.then(literal("dir").executes(context -> {
             try {
-                net.minecraft.util.Util.getOperatingSystem().open(new File("ThunderHackRecode/configs/").toURI());
+                net.minecraft.util.Util.getOperatingSystem().open(new File("HolyFackerRecode/configs/").toURI());
             } catch (Exception e) {
                 e.printStackTrace();
             }

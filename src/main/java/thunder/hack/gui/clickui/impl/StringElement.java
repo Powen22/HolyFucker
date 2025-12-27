@@ -3,7 +3,7 @@ package thunder.hack.gui.clickui.impl;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.StringHelper;
 import org.lwjgl.glfw.GLFW;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.gui.clickui.AbstractElement;
 import thunder.hack.gui.clickui.ClickGUI;
 import thunder.hack.gui.font.FontRenderers;
@@ -43,7 +43,7 @@ public class StringElement extends AbstractElement {
         if (hovered && button == 0)
             listening = !listening;
         if (listening) {
-            ThunderHack.currentKeyListener = ThunderHack.KeyListening.Strings;
+            HolyFacker.currentKeyListener = HolyFacker.KeyListening.Strings;
             currentString = (String) setting.getValue();
         }
         super.mouseClicked(mouseX, mouseY, button);
@@ -58,7 +58,7 @@ public class StringElement extends AbstractElement {
 
     @Override
     public void keyTyped(int keyCode) {
-        if (ThunderHack.currentKeyListener != ThunderHack.KeyListening.Strings)
+        if (HolyFacker.currentKeyListener != HolyFacker.KeyListening.Strings)
             return;
 
         if (listening) {

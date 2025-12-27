@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.events.impl.*;
 import thunder.hack.gui.clickui.ClickGUI;
@@ -88,12 +88,12 @@ public abstract class MixinMinecraftClient {
 
     @Inject(method = "tick", at = @At("HEAD"))
     void preTickHook(CallbackInfo ci) {
-        if (!Module.fullNullCheck()) ThunderHack.EVENT_BUS.post(new EventTick());
+        if (!Module.fullNullCheck()) HolyFacker.EVENT_BUS.post(new EventTick());
     }
 
     @Inject(method = "tick", at = @At("RETURN"))
     void postTickHook(CallbackInfo ci) {
-        if (!Module.fullNullCheck()) ThunderHack.EVENT_BUS.post(new EventPostTick());
+        if (!Module.fullNullCheck()) HolyFacker.EVENT_BUS.post(new EventPostTick());
     }
 
     @Inject(method = "onResolutionChanged", at = @At("TAIL"))
@@ -118,7 +118,7 @@ public abstract class MixinMinecraftClient {
     public void setScreenHookPre(Screen screen, CallbackInfo ci) {
         if (Module.fullNullCheck()) return;
         EventScreen event = new EventScreen(screen);
-        ThunderHack.EVENT_BUS.post(event);
+        HolyFacker.EVENT_BUS.post(event);
         if (event.isCancelled() || (ClickGUI.close && screen == null)) ci.cancel();
     }
 
@@ -149,7 +149,7 @@ public abstract class MixinMinecraftClient {
             return;
         }
 
-        setWindowIcon(ThunderHack.class.getResourceAsStream("/icon.png"), ThunderHack.class.getResourceAsStream("/icon.png"));
+        setWindowIcon(HolyFacker.class.getResourceAsStream("/icon.png"), HolyFacker.class.getResourceAsStream("/icon.png"));
     }
 
     public void setWindowIcon(InputStream img16x16, InputStream img32x32) {
@@ -185,7 +185,7 @@ public abstract class MixinMinecraftClient {
     @Inject(method = "doAttack", at = @At("HEAD"), cancellable = true)
     private void doAttackHook(CallbackInfoReturnable<Boolean> cir) {
         final EventAttack event = new EventAttack(null, true);
-        ThunderHack.EVENT_BUS.post(event);
+        HolyFacker.EVENT_BUS.post(event);
         if (event.isCancelled()) {
             cir.setReturnValue(false);
         }
@@ -194,7 +194,7 @@ public abstract class MixinMinecraftClient {
     @Inject(method = "handleBlockBreaking", at = @At("HEAD"), cancellable = true)
     private void handleBlockBreakingHook(boolean breaking, CallbackInfo ci) {
         EventHandleBlockBreaking event = new EventHandleBlockBreaking();
-        ThunderHack.EVENT_BUS.post(event);
+        HolyFacker.EVENT_BUS.post(event);
         if (event.isCancelled()) {
             ci.cancel();
         }

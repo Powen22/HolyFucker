@@ -45,7 +45,7 @@ public final class AutoEZ extends Module {
 
     public static void loadEZ() {
         try {
-            File file = new File("ThunderHackRecode/misc/AutoEZ.txt");
+            File file = new File("HolyFackerRecode/misc/AutoEZ.txt");
             if (!file.exists()) file.createNewFile();
             new Thread(() -> {
                 try {

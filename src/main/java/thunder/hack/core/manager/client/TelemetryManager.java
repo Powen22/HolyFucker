@@ -32,7 +32,7 @@ public class TelemetryManager implements IManager {
     }
 
     public void pingServer(String name) {
-        HttpRequest req = HttpRequest.newBuilder(URI.create("https://api.thunderhack.net/v1/users/online?name=" + name))
+        HttpRequest req = HttpRequest.newBuilder(URI.create("https://api.HolyFacker.net/v1/users/online?name=" + name))
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
 
@@ -43,7 +43,7 @@ public class TelemetryManager implements IManager {
     }
 
     public static List<String> getPlayers(boolean online) {
-        final HttpRequest request = HttpRequest.newBuilder(URI.create("https://api.thunderhack.net/v1/users" + (online ? "/online" : "")))
+        final HttpRequest request = HttpRequest.newBuilder(URI.create("https://api.HolyFacker.net/v1/users" + (online ? "/online" : "")))
                 .GET()
                 .build();
         final List<String> names = new ArrayList<>();

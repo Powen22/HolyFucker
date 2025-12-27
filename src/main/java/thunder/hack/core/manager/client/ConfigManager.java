@@ -3,7 +3,7 @@ package thunder.hack.core.manager.client;
 import com.google.gson.*;
 import com.mojang.logging.LogUtils;
 import org.jetbrains.annotations.NotNull;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
 import thunder.hack.features.cmd.Command;
 import thunder.hack.core.manager.IManager;
@@ -22,7 +22,7 @@ import static thunder.hack.features.modules.client.ClientSettings.isRu;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class ConfigManager implements IManager {
-    public static final String CONFIG_FOLDER_NAME = "ThunderHackRecode";
+    public static final String CONFIG_FOLDER_NAME = "HolyFackerRecode";
     public static final File MAIN_FOLDER = new File(mc.runDirectory, CONFIG_FOLDER_NAME);
     public static final File CONFIGS_FOLDER = new File(MAIN_FOLDER, "configs");
     public static final File TEMP_FOLDER = new File(MAIN_FOLDER, "temp");
@@ -139,14 +139,14 @@ public class ConfigManager implements IManager {
         }
 
         if (module.isEnabled()) {
-            ThunderHack.EVENT_BUS.unsubscribe(module);
+            HolyFacker.EVENT_BUS.unsubscribe(module);
             module.setEnabled(false);
         }
 
         loadModuleOnly(file, module);
 
         if (module.isEnabled())
-            ThunderHack.EVENT_BUS.subscribe(module);
+            HolyFacker.EVENT_BUS.subscribe(module);
     }
 
     public void load(@NotNull File config) {
@@ -283,7 +283,7 @@ public class ConfigManager implements IManager {
                     setting.setValue((value == null) ? setting.getDefaultValue() : value);
                 }
             } catch (Exception e) {
-                LogUtils.getLogger().warn("[Thunderhack] Module: " + module.getName() + " Setting: " + setting.getName() + " Error: ");
+                LogUtils.getLogger().warn("[HolyFacker] Module: " + module.getName() + " Setting: " + setting.getName() + " Error: ");
                 e.printStackTrace();
             }
         }
@@ -312,7 +312,7 @@ public class ConfigManager implements IManager {
                     }
                 }
             } catch (Exception e) {
-                LogUtils.getLogger().warn("[Thunderhack] Module: " + module.getName() + " Setting: " + setting.getName() + " Error: ");
+                LogUtils.getLogger().warn("[HolyFacker] Module: " + module.getName() + " Setting: " + setting.getName() + " Error: ");
                 e.printStackTrace();
             }
         }

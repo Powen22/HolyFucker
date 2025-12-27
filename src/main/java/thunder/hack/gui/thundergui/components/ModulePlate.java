@@ -5,7 +5,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.RotationAxis;
 import thunder.hack.features.cmd.Command;
 import thunder.hack.features.modules.Module;
-import thunder.hack.features.modules.client.ThunderHackGui;
+import thunder.hack.features.modules.client.HolyFackerGui;
 import thunder.hack.gui.font.FontRenderers;
 import thunder.hack.gui.thundergui.ThunderGui;
 import thunder.hack.setting.impl.Bind;
@@ -56,10 +56,10 @@ public class ModulePlate {
 
         if (module.isOn()) {
             Render2DEngine.drawGradientRound(stack, posX + 1, posY, 89, 30, 4f,
-                    Render2DEngine.applyOpacity(ThunderHackGui.onColor1.getValue().getColorObject(), getFadeFactor()),
-                    Render2DEngine.applyOpacity(ThunderHackGui.onColor1.getValue().getColorObject(), getFadeFactor()),
-                    Render2DEngine.applyOpacity(ThunderHackGui.onColor2.getValue().getColorObject(), getFadeFactor()),
-                    Render2DEngine.applyOpacity(ThunderHackGui.onColor2.getValue().getColorObject(), getFadeFactor()));
+                    Render2DEngine.applyOpacity(HolyFackerGui.onColor1.getValue().getColorObject(), getFadeFactor()),
+                    Render2DEngine.applyOpacity(HolyFackerGui.onColor1.getValue().getColorObject(), getFadeFactor()),
+                    Render2DEngine.applyOpacity(HolyFackerGui.onColor2.getValue().getColorObject(), getFadeFactor()),
+                    Render2DEngine.applyOpacity(HolyFackerGui.onColor2.getValue().getColorObject(), getFadeFactor()));
         } else {
             Render2DEngine.drawRound(stack, posX + 1, posY, 89, 30, 4f, Render2DEngine.applyOpacity(new Color(25, 20, 30, 255), getFadeFactor()));
         }
@@ -136,11 +136,11 @@ public class ModulePlate {
             Render2DEngine.drawRound(stack, posX + 5, posY + 5, 40, 20, 3, Color.BLACK);
 
             if (!holdbind) {
-                Render2DEngine.drawRound(stack, posX + 6, posY + 6, 38, 8, 2, Render2DEngine.injectAlpha(ThunderHackGui.onColor1.getValue().getColorObject(), 170));
+                Render2DEngine.drawRound(stack, posX + 6, posY + 6, 38, 8, 2, Render2DEngine.injectAlpha(HolyFackerGui.onColor1.getValue().getColorObject(), 170));
                 FontRenderers.settings.drawCenteredString(stack, "Toggle", posX + 25, posY + 7, -1);
                 FontRenderers.settings.drawCenteredString(stack, "Hold", posX + 25, posY + 17, new Color(0xA8FFFFFF, true).getRGB());
             } else {
-                Render2DEngine.drawRound(stack, posX + 6, posY + 16, 38, 8, 2, Render2DEngine.injectAlpha(ThunderHackGui.onColor1.getValue().getColorObject(), 170));
+                Render2DEngine.drawRound(stack, posX + 6, posY + 16, 38, 8, 2, Render2DEngine.injectAlpha(HolyFackerGui.onColor1.getValue().getColorObject(), 170));
                 FontRenderers.settings.drawCenteredString(stack, "Hold", posX + 25, posY + 17, -1);
                 FontRenderers.settings.drawCenteredString(stack, "Toggle", posX + 25, posY + 7, new Color(0xA8FFFFFF, true).getRGB());
             }

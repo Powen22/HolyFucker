@@ -48,7 +48,7 @@ public class TargetHud extends HudElement {
     private final Setting<Integer> animY = new Setting<>("AnimationY", 0, -2000, 2000);
     private final Setting<HPmodeEn> hpMode = new Setting<>("HP Mode", HPmodeEn.HP);
     private final Setting<ImageModeEn> imageMode = new Setting<>("Image", ImageModeEn.Anime);
-    private final Setting<ModeEn> Mode = new Setting<>("Mode", ModeEn.ThunderHack);
+    private final Setting<ModeEn> Mode = new Setting<>("Mode", ModeEn.HolyFacker);
     private final Setting<ColorSetting> color = new Setting<>("Color1", new ColorSetting(-16492289), v -> Mode.getValue() == ModeEn.CelkaPasta);
     private final Setting<ColorSetting> color2 = new Setting<>("Color2", new ColorSetting(-16492289), v -> Mode.getValue() == ModeEn.CelkaPasta);
     private final Setting<Boolean> funTimeHP = new Setting<>("FunTimeHP", false);
@@ -79,7 +79,7 @@ public class TargetHud extends HudElement {
         try {
             custom = ThunderUtility.getCustomImg("thud");
         } catch (Exception e) {
-            sendMessage(".minecraft -> ThunderHackRecode -> misc -> images -> thud.png");
+            sendMessage(".minecraft -> HolyFackerRecode -> misc -> images -> thud.png");
         }
     }
 
@@ -118,7 +118,7 @@ public class TargetHud extends HudElement {
         if (animation.getAnimationd() > 0) {
             float animationFactor = (float) MathUtility.clamp(animation.getAnimationd(), 0, 1f);
             switch (Mode.getValue()) {
-                case ThunderHack -> renderThunderHack(context, health, animationFactor);
+                case HolyFacker -> renderHolyFacker(context, health, animationFactor);
                 case CelkaPasta -> renderCelkaPasta(context, health);
                 case NurikZapen -> {
                     if (mini.getValue())
@@ -352,7 +352,7 @@ public class TargetHud extends HudElement {
         }
     }
 
-    private void renderThunderHack(DrawContext context, float health, float animationFactor) {
+    private void renderHolyFacker(DrawContext context, float health, float animationFactor) {
         float hurtPercent = target.hurtTime / 6f;
 
         // Основа
@@ -664,6 +664,6 @@ public class TargetHud extends HudElement {
     }
 
     public enum ModeEn {
-        ThunderHack, NurikZapen, CelkaPasta, Starter
+        HolyFacker, NurikZapen, CelkaPasta, Starter
     }
 }

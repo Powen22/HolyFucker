@@ -6,7 +6,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.features.hud.HudElement;
@@ -120,7 +120,7 @@ public class HudEditorGui extends Screen {
 
     @Override
     public void removed() {
-        ThunderHack.EVENT_BUS.unsubscribe(this);
+        HolyFacker.EVENT_BUS.unsubscribe(this);
     }
 
     public void hudClicked(Module module) {

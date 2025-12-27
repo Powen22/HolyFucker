@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.Formatting;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
 import thunder.hack.features.hud.HudElement;
 import thunder.hack.features.modules.client.HudEditor;
@@ -30,9 +30,9 @@ public class Speedometer extends HudElement {
 
         String str = "Speed " + Formatting.WHITE;
         if (!bps.getValue()) {
-            str += MathUtility.round(getSpeedKpH() * ThunderHack.TICK_TIMER) + " km/h";
+            str += MathUtility.round(getSpeedKpH() * HolyFacker.TICK_TIMER) + " km/h";
         } else {
-            str += MathUtility.round(getSpeedMpS() * ThunderHack.TICK_TIMER) + " b/s";
+            str += MathUtility.round(getSpeedMpS() * HolyFacker.TICK_TIMER) + " b/s";
         }
 
         float pX = getPosX() > mc.getWindow().getScaledWidth() / 2f ? getPosX() - FontRenderers.getModulesRenderer().getStringWidth(str) : getPosX();

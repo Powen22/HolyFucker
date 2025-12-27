@@ -3,7 +3,7 @@ package thunder.hack.features.cmd.impl;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.command.CommandSource;
 import net.minecraft.scoreboard.ScoreboardObjective;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
 import thunder.hack.features.cmd.Command;
 
@@ -30,7 +30,7 @@ public class RctCommand extends Command {
             Managers.ASYNC.run(() -> {
                 mc.player.networkHandler.sendCommand("hub");
                 long failSafe = System.currentTimeMillis();
-                while (ThunderHack.core.getSetBackTime() > 600) {
+                while (HolyFacker.core.getSetBackTime() > 600) {
                     if (System.currentTimeMillis() - failSafe > 1000)
                         break;
                 }

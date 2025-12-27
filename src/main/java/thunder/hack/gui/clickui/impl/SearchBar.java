@@ -4,7 +4,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.StringHelper;
 import org.lwjgl.glfw.GLFW;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.gui.clickui.AbstractButton;
 import thunder.hack.gui.clickui.ClickGUI;
 import thunder.hack.gui.font.FontRenderers;
@@ -45,7 +45,7 @@ public class SearchBar extends AbstractButton {
             listening = false;
         }
 
-        if (listening) ThunderHack.currentKeyListener = ThunderHack.KeyListening.Search;
+        if (listening) HolyFacker.currentKeyListener = HolyFacker.KeyListening.Search;
     }
 
     @Override
@@ -61,11 +61,11 @@ public class SearchBar extends AbstractButton {
 
         if (keyCode == GLFW.GLFW_KEY_F && (InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT_CONTROL) || InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_KEY_RIGHT_CONTROL))) {
             listening = !listening;
-            ThunderHack.currentKeyListener = ThunderHack.KeyListening.Search;
+            HolyFacker.currentKeyListener = HolyFacker.KeyListening.Search;
             return;
         }
 
-        if (ThunderHack.currentKeyListener != ThunderHack.KeyListening.Search)
+        if (HolyFacker.currentKeyListener != HolyFacker.KeyListening.Search)
             return;
 
         if (listening) {

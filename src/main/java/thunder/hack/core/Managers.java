@@ -1,6 +1,6 @@
 package thunder.hack.core;
 
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.manager.IManager;
 import thunder.hack.core.manager.client.*;
 import thunder.hack.core.manager.player.CombatManager;
@@ -10,14 +10,14 @@ import thunder.hack.core.manager.world.HoleManager;
 import thunder.hack.core.manager.world.WayPointManager;
 import thunder.hack.utility.ThunderUtility;
 
-import static thunder.hack.ThunderHack.EVENT_BUS;
+import static thunder.hack.HolyFacker.EVENT_BUS;
 
 /**
- * Class with all ThunderHack Managers' instances
+ * Class with all HolyFacker Managers' instances
  *
  * @author 06ED
  * @see IManager - base interface for all managers
- * @see ThunderHack - managers init process
+ * @see HolyFacker - managers init process
  * @since 1.7
  */
 public class Managers {
@@ -56,8 +56,8 @@ public class Managers {
 
         ASYNC.run(() -> {
             ThunderUtility.syncContributors();
-            ThunderUtility.parseStarGazer();
-            ThunderUtility.parseCommits();
+            // ThunderUtility.parseStarGazer();
+            // ThunderUtility.parseCommits();
             TELEMETRY.fetchData();
         });
     }

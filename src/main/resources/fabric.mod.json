@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "id": "thunderhack",
+  "id": "holyfacker",
   "version": "1.7",
   "icon": "icon.png",
-  "name": "ThunderHack",
+  "name": "HolyFacker",
   "description": "Player Assistance Mod",
   "authors": [
     {
@@ -20,20 +20,17 @@
     }
   ],
   "license": "GNU General Public License v3.0",
-  "accessWidener": "thunderhack.accesswidener",
+  "accessWidener": "holyfacker.accesswidener",
   "environment": "client",
   "entrypoints": {
     "main": [
-      "thunder.hack.ThunderHack"
+      "thunder.hack.HolyFacker"
     ]
   },
   "contact": {
-    "sources": "https://github.com/Pan4ur/ThunderHack-Recode",
-    "homepage": "https://thunderhack-site.vercel.app",
-    "issues": "https://github.com/Pan4ur/ThunderHack-Recode/issues"
   },
   "mixins": [
-    "thunderhack.mixins.json"
+    "holyfacker.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.15.11",

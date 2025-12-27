@@ -18,7 +18,7 @@ import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 import static thunder.hack.features.modules.client.ClientSettings.isRu;
 
 public class KitCommand extends Command {
-    final static private String PATH = "ThunderHackRecode/misc/AutoGear.json";
+    final static private String PATH = "HolyFackerRecode/misc/AutoGear.json";
 
     public KitCommand() {
         super("kit");

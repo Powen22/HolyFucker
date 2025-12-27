@@ -1,7 +1,7 @@
 package thunder.hack.gui.thundergui.components;
 
 import net.minecraft.client.util.math.MatrixStack;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.gui.font.FontRenderers;
 import thunder.hack.gui.thundergui.ThunderGui;
 import thunder.hack.setting.Setting;
@@ -176,9 +176,9 @@ public class ColorPickerComponent extends SettingElement {
 
 
         if (rainbow_focused) getColorSetting().setRainbow(!getColorSetting().isRainbow());
-        if (copy_focused) ThunderHack.copy_color = getColorSetting().getColorObject();
+        if (copy_focused) HolyFacker.copy_color = getColorSetting().getColorObject();
         if (paste_focused)
-            setColor(ThunderHack.copy_color == null ? getColorSetting().getColorObject() : ThunderHack.copy_color);
+            setColor(HolyFacker.copy_color == null ? getColorSetting().getColorObject() : HolyFacker.copy_color);
     }
 
     @Override

@@ -19,7 +19,7 @@ import java.util.List;
 
 public class ShaderManager implements IManager {
     private final static List<RenderTask> tasks = new ArrayList<>();
-    private ThunderHackFramebuffer shaderBuffer;
+    private HolyFackerFramebuffer shaderBuffer;
 
     public float time = 0;
 
@@ -41,7 +41,7 @@ public class ShaderManager implements IManager {
 
     public void renderShaders() {
         if (DEFAULT == null) {
-            shaderBuffer = new ThunderHackFramebuffer(mc.getFramebuffer().textureWidth, mc.getFramebuffer().textureHeight);
+            shaderBuffer = new HolyFackerFramebuffer(mc.getFramebuffer().textureWidth, mc.getFramebuffer().textureHeight);
             reloadShaders();
         }
 
@@ -162,13 +162,13 @@ public class ShaderManager implements IManager {
     }
 
     public void reloadShaders() {
-        DEFAULT = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/outline.json"));
-        SMOKE = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/smoke.json"));
-        GRADIENT = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/gradient.json"));
-        SNOW = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/snow.json"));
-        FADE = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/fade.json"));
+        DEFAULT = ShaderEffectManager.getInstance().manage(Identifier.of("holyfacker", "shaders/post/outline.json"));
+        SMOKE = ShaderEffectManager.getInstance().manage(Identifier.of("holyfacker", "shaders/post/smoke.json"));
+        GRADIENT = ShaderEffectManager.getInstance().manage(Identifier.of("holyfacker", "shaders/post/gradient.json"));
+        SNOW = ShaderEffectManager.getInstance().manage(Identifier.of("holyfacker", "shaders/post/snow.json"));
+        FADE = ShaderEffectManager.getInstance().manage(Identifier.of("holyfacker", "shaders/post/fade.json"));
 
-        FADE_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/fade.json"), managedShaderEffect -> {
+        FADE_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("holyfacker", "shaders/post/fade.json"), managedShaderEffect -> {
             PostEffectProcessor effect = managedShaderEffect.getShaderEffect();
             if (effect == null) return;
 
@@ -176,7 +176,7 @@ public class ShaderManager implements IManager {
             ((IShaderEffect) effect).addFakeTargetHook("bufOut", mc.worldRenderer.getEntityOutlinesFramebuffer());
         });
 
-        DEFAULT_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/outline.json"), managedShaderEffect -> {
+        DEFAULT_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("holyfacker", "shaders/post/outline.json"), managedShaderEffect -> {
             PostEffectProcessor effect = managedShaderEffect.getShaderEffect();
             if (effect == null) return;
 
@@ -184,7 +184,7 @@ public class ShaderManager implements IManager {
             ((IShaderEffect) effect).addFakeTargetHook("bufOut", mc.worldRenderer.getEntityOutlinesFramebuffer());
         });
 
-        SMOKE_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/smoke.json"), managedShaderEffect -> {
+        SMOKE_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("holyfacker", "shaders/post/smoke.json"), managedShaderEffect -> {
             PostEffectProcessor effect = managedShaderEffect.getShaderEffect();
             if (effect == null) return;
 
@@ -192,7 +192,7 @@ public class ShaderManager implements IManager {
             ((IShaderEffect) effect).addFakeTargetHook("bufOut", mc.worldRenderer.getEntityOutlinesFramebuffer());
         });
 
-        GRADIENT_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/gradient.json"), managedShaderEffect -> {
+        GRADIENT_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("holyfacker", "shaders/post/gradient.json"), managedShaderEffect -> {
             PostEffectProcessor effect = managedShaderEffect.getShaderEffect();
             if (effect == null) return;
 
@@ -200,7 +200,7 @@ public class ShaderManager implements IManager {
             ((IShaderEffect) effect).addFakeTargetHook("bufOut", mc.worldRenderer.getEntityOutlinesFramebuffer());
         });
 
-        SNOW_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("thunderhack", "shaders/post/snow.json"), managedShaderEffect -> {
+        SNOW_OUTLINE = ShaderEffectManager.getInstance().manage(Identifier.of("holyfacker", "shaders/post/snow.json"), managedShaderEffect -> {
             PostEffectProcessor effect = managedShaderEffect.getShaderEffect();
             if (effect == null) return;
 
@@ -209,8 +209,8 @@ public class ShaderManager implements IManager {
         });
     }
 
-    public static class ThunderHackFramebuffer extends Framebuffer {
-        public ThunderHackFramebuffer(int width, int height) {
+    public static class HolyFackerFramebuffer extends Framebuffer {
+        public HolyFackerFramebuffer(int width, int height) {
             super(false);
             RenderSystem.assertOnRenderThreadOrInit();
             resize(width, height, true);
@@ -220,7 +220,7 @@ public class ShaderManager implements IManager {
 
     public boolean fullNullCheck() {
         if (GRADIENT == null || SMOKE == null || DEFAULT == null) {
-            shaderBuffer = new ThunderHackFramebuffer(mc.getFramebuffer().textureWidth, mc.getFramebuffer().textureHeight);
+            shaderBuffer = new HolyFackerFramebuffer(mc.getFramebuffer().textureWidth, mc.getFramebuffer().textureHeight);
             reloadShaders();
             return true;
         }

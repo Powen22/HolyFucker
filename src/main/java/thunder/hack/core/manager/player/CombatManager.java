@@ -9,7 +9,7 @@ import net.minecraft.network.packet.s2c.play.EntityStatusS2CPacket;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.manager.IManager;
 import thunder.hack.core.Managers;
 import thunder.hack.events.impl.EventPostTick;
@@ -43,7 +43,7 @@ public class CombatManager implements IManager {
                 } else if (popList.get(ent.getName().getString()) != null) {
                     popList.put(ent.getName().getString(), popList.get(ent.getName().getString()) + 1);
                 }
-                ThunderHack.EVENT_BUS.post(new TotemPopEvent((PlayerEntity) ent, popList.get(ent.getName().getString())));
+                HolyFacker.EVENT_BUS.post(new TotemPopEvent((PlayerEntity) ent, popList.get(ent.getName().getString())));
             }
         }
     }

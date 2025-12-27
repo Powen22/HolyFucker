@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 @Mixin(RenderTickCounter.Dynamic.class)
 public class MixinDynamic {
     @Shadow
@@ -20,10 +20,10 @@ public class MixinDynamic {
 
     @Inject(method = "Lnet/minecraft/client/render/RenderTickCounter$Dynamic;beginRenderTick(J)I", at = @At("HEAD"), cancellable = true)
     private void beginRenderTickHook(long timeMillis, CallbackInfoReturnable<Integer> cir) {
-        if(ThunderHack.TICK_TIMER == 1)
+        if(HolyFacker.TICK_TIMER == 1)
             return;
 
-        this.lastFrameDuration = ((timeMillis - this.prevTimeMillis) / this.tickTime) * ThunderHack.TICK_TIMER;
+        this.lastFrameDuration = ((timeMillis - this.prevTimeMillis) / this.tickTime) * HolyFacker.TICK_TIMER;
         this.prevTimeMillis = timeMillis;
         this.tickDelta += this.lastFrameDuration;
         int i = (int) this.tickDelta;

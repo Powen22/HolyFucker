@@ -8,7 +8,7 @@ import thunder.hack.features.modules.Module;
 import thunder.hack.setting.Setting;
 import thunder.hack.utility.Timer;
 
-import static thunder.hack.ThunderHack.LOGGER;
+import static thunder.hack.HolyFacker.LOGGER;
 
 public final class AutoDuel extends Module {
     private final Setting<Mode> mode = new Setting<>("Mode", Mode.Accept);

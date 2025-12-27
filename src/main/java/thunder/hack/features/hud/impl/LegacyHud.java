@@ -11,7 +11,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import org.apache.commons.lang3.StringUtils;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.gui.font.FontRenderer;
@@ -85,7 +85,7 @@ public class LegacyHud extends Module {
         color = colorSetting.getValue().getColor();
 
         if (waterMark.getValue())
-            drawText(context, "thunderhack v" + ThunderHack.VERSION, 2, waterMarkY.getValue());
+            drawText(context, "holyfacker v" + HolyFacker.VERSION, 2, waterMarkY.getValue());
 
         int j = (mc.currentScreen instanceof ChatScreen && !renderingUp.getValue()) ? 14 : 0;
 
@@ -146,7 +146,7 @@ public class LegacyHud extends Module {
         }
 
         if (speed.getValue()) {
-            String str = "Speed " + Formatting.WHITE + MathUtility.round(Managers.PLAYER.currentPlayerSpeed * (bps.getValue() ? 20f : 72f) * ThunderHack.TICK_TIMER) + (bps.getValue() ? " b/s" : " km/h");
+            String str = "Speed " + Formatting.WHITE + MathUtility.round(Managers.PLAYER.currentPlayerSpeed * (bps.getValue() ? 20f : 72f) * HolyFacker.TICK_TIMER) + (bps.getValue() ? " b/s" : " km/h");
             drawText(context, str, (width - getStringWidth(str) - 2), renderingUp.getValue() ? (height - 2 - (i += offset)) : (2 + i++ * offset));
         }
         if (chests.getValue()) {

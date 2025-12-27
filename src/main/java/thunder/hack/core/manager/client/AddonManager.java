@@ -3,7 +3,7 @@ package thunder.hack.core.manager.client;
 import com.mojang.logging.LogUtils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.api.IAddon;
 import thunder.hack.core.manager.IManager;
 import thunder.hack.core.Managers;
@@ -36,7 +36,7 @@ public class AddonManager implements IManager {
     public void initAddons() {
         LogUtils.getLogger().info("Starting addon initialization.");
 
-        for (EntrypointContainer<IAddon> entrypoint : FabricLoader.getInstance().getEntrypointContainers("thunderhack", IAddon.class)) {
+        for (EntrypointContainer<IAddon> entrypoint : FabricLoader.getInstance().getEntrypointContainers("holyfacker", IAddon.class)) {
             IAddon addon = entrypoint.getEntrypoint();
 
             try {
@@ -50,7 +50,7 @@ public class AddonManager implements IManager {
 
                 addAddon(addon);
                 LogUtils.getLogger().debug("Addon added to manager.");
-                ThunderHack.EVENT_BUS.registerLambdaFactory(addon.getPackage(), (lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup()));
+                HolyFacker.EVENT_BUS.registerLambdaFactory(addon.getPackage(), (lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup()));
 
                 // Register Modules
                 if (addon.getModules() != null)

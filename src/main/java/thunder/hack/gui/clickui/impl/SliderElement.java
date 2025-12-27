@@ -5,7 +5,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.StringHelper;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
 import thunder.hack.features.modules.client.HudEditor;
 import thunder.hack.gui.clickui.AbstractElement;
@@ -96,7 +96,7 @@ public class SliderElement extends AbstractElement {
             listening = true;
         }
         if (listening)
-            ThunderHack.currentKeyListener = ThunderHack.KeyListening.Sliders;
+            HolyFacker.currentKeyListener = HolyFacker.KeyListening.Sliders;
         super.mouseClicked(mouseX, mouseY, button);
     }
 
@@ -107,7 +107,7 @@ public class SliderElement extends AbstractElement {
 
     @Override
     public void keyTyped(int keyCode) {
-        if (ThunderHack.currentKeyListener != ThunderHack.KeyListening.Sliders)
+        if (HolyFacker.currentKeyListener != HolyFacker.KeyListening.Sliders)
             return;
 
         if (listening) {

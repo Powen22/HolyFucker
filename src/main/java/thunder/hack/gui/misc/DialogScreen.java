@@ -34,6 +34,11 @@ public class DialogScreen extends Screen {
 
     @Override
     public void render(@NotNull DrawContext context, int mouseX, int mouseY, float delta) {
+        // Проверяем, инициализированы ли шрифты
+        if (FontRenderers.sf_medium == null) {
+            return; // Пропускаем рендеринг, если шрифты еще не инициализированы
+        }
+        
         float halfOfWidth = mc.getWindow().getScaledWidth() / 2f;
         float halfOfHeight = mc.getWindow().getScaledHeight() / 2f;
 

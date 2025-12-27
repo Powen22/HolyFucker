@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.events.impl.EventTravel;
 import thunder.hack.features.modules.Module;
@@ -97,7 +97,7 @@ public class MixinEntityLiving implements IEntityLiving {
         if (Module.fullNullCheck()) return;
         if ((LivingEntity) (Object) this != mc.player) return;
         final EventTravel event = new EventTravel(mc.player.getVelocity(), true);
-        ThunderHack.EVENT_BUS.post(event);
+        HolyFacker.EVENT_BUS.post(event);
         if (event.isCancelled()) {
             mc.player.move(MovementType.SELF, event.getmVec());
             ci.cancel();
@@ -109,7 +109,7 @@ public class MixinEntityLiving implements IEntityLiving {
         if (Module.fullNullCheck()) return;
         if ((LivingEntity) (Object) this != mc.player) return;
         final EventTravel event = new EventTravel(movementInput, false);
-        ThunderHack.EVENT_BUS.post(event);
+        HolyFacker.EVENT_BUS.post(event);
         if (event.isCancelled()) {
             mc.player.move(MovementType.SELF, mc.player.getVelocity());
             ci.cancel();

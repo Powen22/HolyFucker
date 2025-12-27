@@ -2,7 +2,7 @@ package thunder.hack.gui.thundergui.components;
 
 import net.minecraft.client.gui.DrawContext;
 import thunder.hack.core.Managers;
-import thunder.hack.features.modules.client.ThunderHackGui;
+import thunder.hack.features.modules.client.HolyFackerGui;
 import thunder.hack.gui.font.FontRenderers;
 import thunder.hack.gui.thundergui.ThunderGui;
 import thunder.hack.utility.render.Render2DEngine;
@@ -49,8 +49,8 @@ public class ConfigComponent {
             Render2DEngine.drawGradientRound(context.getMatrices(), posX + 5, posY, 285, 30, 4f,
                     Render2DEngine.applyOpacity(new Color(55, 44, 66, 255), getFadeFactor()),
                     Render2DEngine.applyOpacity(new Color(25, 20, 30, 255), getFadeFactor()),
-                    Render2DEngine.applyOpacity(ThunderHackGui.onColor1.getValue().getColorObject(), getFadeFactor()),
-                    Render2DEngine.applyOpacity(ThunderHackGui.onColor2.getValue().getColorObject(), getFadeFactor()));
+                    Render2DEngine.applyOpacity(HolyFackerGui.onColor1.getValue().getColorObject(), getFadeFactor()),
+                    Render2DEngine.applyOpacity(HolyFackerGui.onColor2.getValue().getColorObject(), getFadeFactor()));
         } else
             Render2DEngine.drawRound(context.getMatrices(), posX + 5, posY, 285, 30, 4f, Render2DEngine.applyOpacity(new Color(44, 35, 52, 255), getFadeFactor()));
 

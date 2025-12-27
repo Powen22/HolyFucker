@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.events.impl.EventAttack;
 import thunder.hack.events.impl.EventEatFood;
@@ -61,7 +61,7 @@ public class MixinPlayerEntity {
     @Inject(method = "attack", at = @At("HEAD"), cancellable = true)
     private void attackAHook2(Entity target, CallbackInfo ci) {
         final EventAttack event = new EventAttack(target, false);
-        ThunderHack.EVENT_BUS.post(event);
+        HolyFacker.EVENT_BUS.post(event);
         if (event.isCancelled()) {
             ci.cancel();
         }
@@ -73,7 +73,7 @@ public class MixinPlayerEntity {
             return;
 
         final EventPlayerTravel event = new EventPlayerTravel(movementInput, true);
-        ThunderHack.EVENT_BUS.post(event);
+        HolyFacker.EVENT_BUS.post(event);
         if (event.isCancelled()) {
             mc.player.move(MovementType.SELF, mc.player.getVelocity());
             ci.cancel();
@@ -86,7 +86,7 @@ public class MixinPlayerEntity {
         if (mc.player == null)
             return;
         final EventPlayerTravel event = new EventPlayerTravel(movementInput, false);
-        ThunderHack.EVENT_BUS.post(event);
+        HolyFacker.EVENT_BUS.post(event);
         if (event.isCancelled()) {
             mc.player.move(MovementType.SELF, mc.player.getVelocity());
             ci.cancel();
@@ -95,17 +95,17 @@ public class MixinPlayerEntity {
 
     @Inject(method = "jump", at = @At("HEAD"))
     private void onJumpPre(CallbackInfo ci) {
-        ThunderHack.EVENT_BUS.post(new EventPlayerJump(true));
+        HolyFacker.EVENT_BUS.post(new EventPlayerJump(true));
     }
 
     @Inject(method = "jump", at = @At("RETURN"))
     private void onJumpPost(CallbackInfo ci) {
-        ThunderHack.EVENT_BUS.post(new EventPlayerJump(false));
+        HolyFacker.EVENT_BUS.post(new EventPlayerJump(false));
     }
 
     @Inject(method = "eatFood", at = @At("RETURN"))
     public void eatFoodHook(World world, ItemStack stack, FoodComponent foodComponent, CallbackInfoReturnable<ItemStack> cir) {
-        ThunderHack.EVENT_BUS.post(new EventEatFood(cir.getReturnValue()));
+        HolyFacker.EVENT_BUS.post(new EventEatFood(cir.getReturnValue()));
     }
 
 

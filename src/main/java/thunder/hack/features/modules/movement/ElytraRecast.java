@@ -8,7 +8,7 @@ import net.minecraft.item.ElytraItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.events.impl.EventSync;
 import thunder.hack.events.impl.EventTravel;
 import thunder.hack.injection.accesors.ILivingEntity;
@@ -84,7 +84,7 @@ public class ElytraRecast extends Module {
         if (!mc.player.isFallFlying() && mc.player.fallDistance > 0 && checkElytra() && !mc.player.isFallFlying())
             castElytra();
 
-        jitter = (20 * MathUtility.sin((System.currentTimeMillis() - ThunderHack.initTime) / 50f));
+        jitter = (20 * MathUtility.sin((System.currentTimeMillis() - HolyFacker.initTime) / 50f));
 
         ((ILivingEntity) mc.player).setLastJumpCooldown(0);
     }

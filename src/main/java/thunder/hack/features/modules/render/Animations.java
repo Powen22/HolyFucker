@@ -16,7 +16,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 import org.jetbrains.annotations.NotNull;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.events.impl.EventHeldItemRenderer;
 import thunder.hack.events.impl.PacketEvent;
@@ -273,7 +273,7 @@ public class Animations extends Module {
                 }
 
                 EventHeldItemRenderer event = new EventHeldItemRenderer(hand, item, equipProgress, matrices);
-                ThunderHack.EVENT_BUS.post(event);
+                HolyFacker.EVENT_BUS.post(event);
                 renderItem(player, item, bl3 ? ModelTransformationMode.FIRST_PERSON_RIGHT_HAND : ModelTransformationMode.FIRST_PERSON_LEFT_HAND, !bl3, matrices, vertexConsumers, light);
             } else {
                 bl2 = arm == Arm.RIGHT;
@@ -342,7 +342,7 @@ public class Animations extends Module {
                     renderSwordAnimation(matrices, f, swingProgress, equipProgress, arm);
                 }
                 EventHeldItemRenderer event = new EventHeldItemRenderer(hand, item, equipProgress, matrices);
-                ThunderHack.EVENT_BUS.post(event);
+                HolyFacker.EVENT_BUS.post(event);
                 renderItem(player, item, bl2 ? ModelTransformationMode.FIRST_PERSON_RIGHT_HAND : ModelTransformationMode.FIRST_PERSON_LEFT_HAND, !bl2, matrices, vertexConsumers, light);
             }
             matrices.pop();

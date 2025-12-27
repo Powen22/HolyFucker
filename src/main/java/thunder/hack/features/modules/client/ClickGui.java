@@ -3,7 +3,7 @@ package thunder.hack.features.modules.client;
 import baritone.api.BaritoneAPI;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.util.Identifier;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.events.impl.EventSetting;
 import thunder.hack.gui.clickui.ClickGUI;
 import thunder.hack.gui.font.FontRenderers;
@@ -37,7 +37,7 @@ public class ClickGui extends Module {
 
     @Override
     public void onEnable() {
-        if(pauseBaritone.getValue() && !fullNullCheck() && ThunderHack.baritone){
+        if(pauseBaritone.getValue() && !fullNullCheck() && HolyFacker.baritone){
             BaritoneAPI.getProvider().getPrimaryBaritone().getCommandManager().execute("pause");
         }
         setGui();
@@ -45,7 +45,7 @@ public class ClickGui extends Module {
 
     @Override
     public void onDisable() {
-        if(pauseBaritone.getValue() && !fullNullCheck() && ThunderHack.baritone){
+        if(pauseBaritone.getValue() && !fullNullCheck() && HolyFacker.baritone){
             BaritoneAPI.getProvider().getPrimaryBaritone().getCommandManager().execute("resume");
         }
     }
@@ -122,7 +122,7 @@ public class ClickGui extends Module {
         Image(String file, int fileWidth, int fileHeight, int[] pos, int size) {
             this.fileHeight = fileHeight;
             this.fileWidth = fileWidth;
-            this.file = Identifier.of("thunderhack", "textures/gui/images/" + file);
+            this.file = Identifier.of("holyfacker", "textures/gui/images/" + file);
             this.pos = pos;
             this.size = size;
         }

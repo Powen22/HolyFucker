@@ -51,7 +51,7 @@ public class AsyncManager implements IManager {
     }
 
     public AsyncManager() {
-        clientService.setName("ThunderHack-AsyncProcessor");
+        clientService.setName("HolyFacker-AsyncProcessor");
         clientService.setDaemon(true);
         clientService.start();
     }
@@ -60,7 +60,7 @@ public class AsyncManager implements IManager {
     public void onSync(EventSync e) {
         if (!clientService.isAlive()) {
             clientService = new ClientService();
-            clientService.setName("ThunderHack-AsyncProcessor");
+            clientService.setName("HolyFacker-AsyncProcessor");
             clientService.setDaemon(true);
             clientService.start();
         }

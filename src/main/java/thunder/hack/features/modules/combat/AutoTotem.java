@@ -832,7 +832,7 @@ public final class AutoTotem extends Module {
         if (bindSwapPressed && itemSlot != -1 && swapNotify.getValue()) {
             ItemStack swapStack = mc.player.getInventory().getStack(itemSlot);
             String itemName = swapStack.getName().getString();
-            Managers.NOTIFICATION.publicity("AutoTotem", "Свапнул на " + itemName, 2, Notification.Type.SUCCESS);
+            Managers.NOTIFICATION.publicity("AutoSwap", "Свапнул на " + itemName, 2, Notification.Type.SUCCESS);
         }
 
         return itemSlot;

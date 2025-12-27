@@ -2,7 +2,7 @@ package thunder.hack.gui.clickui.impl;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.gui.clickui.AbstractElement;
 import thunder.hack.gui.font.FontRenderers;
 import thunder.hack.setting.Setting;
@@ -63,7 +63,7 @@ public class ColorPickerElement extends AbstractElement {
         boolean rainbowHovered = Render2DEngine.isHovered(mouseX, mouseY, x + 36f, y + 54f, 24, 7);
         boolean copyHovered = Render2DEngine.isHovered(mouseX, mouseY, x + 9f, y + 54f, 24, 7);
         boolean pasteHovered = Render2DEngine.isHovered(mouseX, mouseY, x + 63f, y + 54f, 24, 7);
-        boolean dark = Render2DEngine.isDark(ThunderHack.copy_color);
+        boolean dark = Render2DEngine.isDark(HolyFacker.copy_color);
         boolean dark2 = Render2DEngine.isDark(getColorSetting().getColorObject());
 
         Render2DEngine.drawRect(matrixStack, x + 9f, y + 54f, 24, 7, new Color(0x424242));
@@ -72,7 +72,7 @@ public class ColorPickerElement extends AbstractElement {
         Render2DEngine.drawRect(matrixStack, x + 36f, y + 54f, 24, 7, getColorSetting().isRainbow() ? getColorSetting().getColorObject() : new Color(0x424242));
         FontRenderers.sf_medium_mini.drawString(matrixStack, "RB", x + 44f, y + 56.5f, rainbowHovered ? new Color(0xA3FFFFFF, true).getRGB() : (dark2 ? Color.WHITE.getRGB() : Color.BLACK.getRGB()));
 
-        Render2DEngine.drawRect(matrixStack, x + 63f, y + 54f, 24, 7, ThunderHack.copy_color);
+        Render2DEngine.drawRect(matrixStack, x + 63f, y + 54f, 24, 7, HolyFacker.copy_color);
         FontRenderers.sf_medium_mini.drawString(matrixStack, "Paste", x + 67f, y + 56.5f, pasteHovered ? new Color(0xA3FFFFFF, true).getRGB() : dark ? Color.WHITE.getRGB() : Color.BLACK.getRGB());
 
         renderPicker(matrixStack, mouseX, mouseY, getColorSetting().getColorObject());
@@ -186,9 +186,9 @@ public class ColorPickerElement extends AbstractElement {
 
         else if (rainbowHovered && button == 0) getColorSetting().setRainbow(!getColorSetting().isRainbow());
 
-        else if (copyHovered) ThunderHack.copy_color = getColorSetting().getColorObject();
+        else if (copyHovered) HolyFacker.copy_color = getColorSetting().getColorObject();
 
-        else if (pasteHovered) getColorSetting().setColor(ThunderHack.copy_color.getRGB());
+        else if (pasteHovered) getColorSetting().setColor(HolyFacker.copy_color.getRGB());
 
         super.mouseClicked(mouseX, mouseY, button);
     }

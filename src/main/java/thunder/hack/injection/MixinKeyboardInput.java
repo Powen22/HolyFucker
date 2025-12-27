@@ -5,7 +5,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.events.impl.EventKeyboardInput;
 import thunder.hack.features.modules.Module;
 
@@ -15,7 +15,7 @@ public class MixinKeyboardInput {
     private void onSneak(boolean slowDown, float slowDownFactor, CallbackInfo ci) {
         if(Module.fullNullCheck()) return;
         EventKeyboardInput event = new EventKeyboardInput();
-        ThunderHack.EVENT_BUS.post(event);
+        HolyFacker.EVENT_BUS.post(event);
         if (event.isCancelled()) ci.cancel();
     }
 }

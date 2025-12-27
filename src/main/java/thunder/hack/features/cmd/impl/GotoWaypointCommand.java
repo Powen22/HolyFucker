@@ -2,7 +2,7 @@ package thunder.hack.features.cmd.impl;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.command.CommandSource;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.features.cmd.Command;
 import baritone.api.BaritoneAPI;
 import thunder.hack.features.cmd.args.WayPointArgumentType;
@@ -19,7 +19,7 @@ public class GotoWaypointCommand extends Command {
     @Override
     public void executeBuild(LiteralArgumentBuilder<CommandSource> builder) {
         builder.then(arg("name", WayPointArgumentType.create()).executes(context -> {
-            if (!ThunderHack.baritone) {
+            if (!HolyFacker.baritone) {
                 sendMessage(isRu() ? "Баритон не найден (можешь скачать на https://meteorclient.com)" : "Baritone not found (you can download it at https://meteorclient.com)");
                 return SINGLE_SUCCESS;
             }

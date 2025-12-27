@@ -12,7 +12,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.features.modules.client.ClientSettings;
 import thunder.hack.features.modules.client.HudEditor;
@@ -536,7 +536,7 @@ public class Render3DEngine {
         Matrix4f matrix = stack.peek().getPositionMatrix();
 
         for (int j = 0; j < vecs.size() - 1; ++j) {
-            float alpha = 1f - (((float) j + ((System.currentTimeMillis() - ThunderHack.initTime) / 5f)) % 360) / 60f;
+            float alpha = 1f - (((float) j + ((System.currentTimeMillis() - HolyFacker.initTime) / 5f)) % 360) / 60f;
             bufferBuilder.vertex(matrix, (float) vecs.get(j).x, (float) vecs.get(j).y, (float) vecs.get(j).z).color(Render2DEngine.injectAlpha(HudEditor.getColor((int) (j / 20f)), (int) (alpha * 255)).getRGB());
             bufferBuilder.vertex(matrix, (float) vecs.get(j + 1).x, (float) vecs.get(j + 1).y + 0.1f, (float) vecs.get(j + 1).z).color(Render2DEngine.injectAlpha(HudEditor.getColor((int) (j / 20f)), (int) (alpha * 255f)).getRGB());
         }
@@ -545,7 +545,7 @@ public class Render3DEngine {
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
         for (int j = 0; j < vecs1.size() - 1; ++j) {
-            float alpha = 1f - (((float) j + ((System.currentTimeMillis() - ThunderHack.initTime) / 5f)) % 360) / 60f;
+            float alpha = 1f - (((float) j + ((System.currentTimeMillis() - HolyFacker.initTime) / 5f)) % 360) / 60f;
             bufferBuilder.vertex(matrix, (float) vecs1.get(j).x, (float) vecs1.get(j).y, (float) vecs1.get(j).z).color(Render2DEngine.injectAlpha(HudEditor.getColor((int) (j / 20f)), (int) (alpha * 255)).getRGB());
             bufferBuilder.vertex(matrix, (float) vecs1.get(j + 1).x, (float) vecs1.get(j + 1).y + 0.1f, (float) vecs1.get(j + 1).z).color(Render2DEngine.injectAlpha(HudEditor.getColor((int) (j / 20f)), (int) (alpha * 255f)).getRGB());
         }
@@ -554,7 +554,7 @@ public class Render3DEngine {
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
         for (int j = 0; j < vecs2.size() - 1; ++j) {
-            float alpha = 1f - (((float) j + ((System.currentTimeMillis() - ThunderHack.initTime) / 5f)) % 360) / 60f;
+            float alpha = 1f - (((float) j + ((System.currentTimeMillis() - HolyFacker.initTime) / 5f)) % 360) / 60f;
             bufferBuilder.vertex(matrix, (float) vecs2.get(j).x, (float) vecs2.get(j).y, (float) vecs2.get(j).z).color(Render2DEngine.injectAlpha(HudEditor.getColor((int) (j / 20f)), (int) (alpha * 255)).getRGB());
             bufferBuilder.vertex(matrix, (float) vecs2.get(j + 1).x, (float) vecs2.get(j + 1).y + 0.1f, (float) vecs2.get(j + 1).z).color(Render2DEngine.injectAlpha(HudEditor.getColor((int) (j / 20f)), (int) (alpha * 255f)).getRGB());
         }

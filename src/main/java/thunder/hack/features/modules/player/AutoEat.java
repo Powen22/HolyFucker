@@ -7,7 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.util.Hand;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.injection.accesors.IMinecraftClient;
 import thunder.hack.features.modules.Module;
 import thunder.hack.setting.Setting;
@@ -24,7 +24,7 @@ public class AutoEat extends Module {
     public final Setting<Boolean> spiderEye = new Setting("SpiderEye", false);
     public final Setting<Boolean> pufferfish = new Setting("Pufferfish", false);
     public final Setting<Boolean> swapBack = new Setting<>("SwapBack", true);
-    public final Setting<Boolean> pauseBaritone = new Setting<>("PauseBaritone", true, v -> ThunderHack.baritone);
+    public final Setting<Boolean> pauseBaritone = new Setting<>("PauseBaritone", true, v -> HolyFacker.baritone);
 
     private boolean eating;
     private int prevSlot;
@@ -56,7 +56,7 @@ public class AutoEat extends Module {
         if (mc.currentScreen != null && !mc.player.isUsingItem())
             ((IMinecraftClient) mc).idoItemUse();
         else {
-            if(pauseBaritone.getValue() && ThunderHack.baritone)
+            if(pauseBaritone.getValue() && HolyFacker.baritone)
                 BaritoneAPI.getProvider().getPrimaryBaritone().getCommandManager().execute("pause");
 
             mc.options.useKey.setPressed(true);
@@ -69,7 +69,7 @@ public class AutoEat extends Module {
         if (swapBack.getValue())
             mc.player.getInventory().selectedSlot = prevSlot;
 
-        if (pauseBaritone.getValue() && ThunderHack.baritone)
+        if (pauseBaritone.getValue() && HolyFacker.baritone)
             BaritoneAPI.getProvider().getPrimaryBaritone().getCommandManager().execute("resume");
     }
 

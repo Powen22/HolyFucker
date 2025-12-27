@@ -27,7 +27,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import thunder.hack.ThunderHack;
+import thunder.hack.HolyFacker;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.features.modules.Module;
 import thunder.hack.features.modules.client.ClientSettings;
@@ -173,7 +173,7 @@ public abstract class MixinGameRenderer {
             return;
         }
         if (ClientSettings.customBob.getValue()) {
-            ThunderHack.core.bobView(matrices, tickDelta);
+            HolyFacker.core.bobView(matrices, tickDelta);
             ci.cancel();
         }
     }
