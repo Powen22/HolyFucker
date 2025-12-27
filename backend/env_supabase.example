@@ -1,0 +1,20 @@
+# Supabase настройки
+# Скопируйте этот файл в .env и заполните своими данными
+
+# Supabase credentials (из Settings -> API)
+SUPABASE_URL=https://xxxxx.supabase.co
+SUPABASE_KEY=sb_xxxxx...
+
+# Discord OAuth2 настройки
+# Получите эти данные в Discord Developer Portal:
+# https://discord.com/developers/applications
+DISCORD_CLIENT_ID=ваш_client_id_здесь
+DISCORD_CLIENT_SECRET=ваш_client_secret_здесь
+
+# Redirect URI для Discord OAuth2
+# Если используете свой сервер:
+DISCORD_REDIRECT_URI=http://192.168.0.247:8000/link/callback
+
+# Если используете Supabase Edge Functions:
+# DISCORD_REDIRECT_URI=https://xxxxx.supabase.co/functions/v1/discord-nameplates/link/callback
+
