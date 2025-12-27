@@ -596,11 +596,6 @@ public class Aura extends Module {
             case HolyFackerV2 -> Render3DEngine.renderGhosts(espLength.getValue(), espFactor.getValue(), espShaking.getValue(), espAmplitude.getValue(), target);
             case HolyFacker -> Render3DEngine.drawTargetEsp(stack, target);
         }
-
-        if (clientLook.getValue() && rotationMode.getValue() != Mode.None) {
-            mc.player.setYaw((float) Render2DEngine.interpolate(mc.player.prevYaw, rotationYaw, Render3DEngine.getTickDelta()));
-            mc.player.setPitch((float) Render2DEngine.interpolate(mc.player.prevPitch, rotationPitch, Render3DEngine.getTickDelta()));
-        }
     }
 
     @Override
