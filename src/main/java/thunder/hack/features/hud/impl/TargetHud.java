@@ -174,7 +174,7 @@ public class TargetHud extends HudElement {
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
         FontRenderers.modules.drawString(context.getMatrices(), ModuleManager.media.isEnabled() ? "Protected " : ModuleManager.nameProtect.isEnabled() && target == mc.player ? NameProtect.getCustomName() : target.getName().getString(), getPosX() + 50, getPosY() + 7, -1);
-        FontRenderers.modules.drawCenteredString(context.getMatrices(), hpMode.getValue() == HPmodeEn.HP ? String.valueOf(Math.round(10.0 * getHealth()) / 10.0) : (((Math.round(10.0 * getHealth()) / 10.0) / 20f) * 100 + "%"), getPosX() + 81f, getPosY() + 34f, -1);
+        FontRenderers.modules.drawCenteredString(context.getMatrices(), hpMode.getValue() == HPmodeEn.HP ? String.valueOf(roundHealthToHalf(getHealth())) : ((roundHealthToHalf(getHealth()) / 20f) * 100 + "%"), getPosX() + 81f, getPosY() + 34f, -1);
 
 
         if (target instanceof PlayerEntity pe) {
@@ -234,7 +234,7 @@ public class TargetHud extends HudElement {
             Render2DEngine.renderRoundedGradientRect(context.getMatrices(), HudEditor.getColor(270), HudEditor.getColor(0), HudEditor.getColor(0), HudEditor.getColor(270), getPosX() + 48, getPosY() + 32, (int) MathUtility.clamp((85 * (health / target.getMaxHealth())), 8, 85), 11, 4f);
         }
 
-        FontRenderers.sf_bold.drawCenteredString(context.getMatrices(), hpMode.getValue() == HPmodeEn.HP ? String.valueOf(Math.round(10.0 * getHealth()) / 10.0) : (((Math.round(10.0 * getHealth()) / 10.0) / 20f) * 100 + "%"), getPosX() + 92f, getPosY() + 35f,
+        FontRenderers.sf_bold.drawCenteredString(context.getMatrices(), hpMode.getValue() == HPmodeEn.HP ? String.valueOf(roundHealthToHalf(getHealth())) : ((roundHealthToHalf(getHealth()) / 20f) * 100 + "%"), getPosX() + 92f, getPosY() + 35f,
                 Render2DEngine.applyOpacity(Colors.WHITE, animationFactor));
         //
 
@@ -312,7 +312,7 @@ public class TargetHud extends HudElement {
             Render2DEngine.renderRoundedGradientRect(context.getMatrices(), HudEditor.getColor(270), HudEditor.getColor(0), HudEditor.getColor(0), HudEditor.getColor(270), getPosX() + 38, getPosY() + 25, (int) MathUtility.clamp((52 * (health / target.getMaxHealth())), 8, 52), 7, 2f);
         }
 
-        FontRenderers.sf_bold_mini.drawCenteredString(context.getMatrices(), hpMode.getValue() == HPmodeEn.HP ? String.valueOf(Math.round(10.0 * getHealth()) / 10.0) : (((Math.round(10.0 * getHealth()) / 10.0) / 20f) * 100 + "%"), getPosX() + 65, getPosY() + 27f, Render2DEngine.applyOpacity(Colors.WHITE, animationFactor));
+        FontRenderers.sf_bold_mini.drawCenteredString(context.getMatrices(), hpMode.getValue() == HPmodeEn.HP ? String.valueOf(roundHealthToHalf(getHealth())) : ((roundHealthToHalf(getHealth()) / 20f) * 100 + "%"), getPosX() + 65, getPosY() + 27f, Render2DEngine.applyOpacity(Colors.WHITE, animationFactor));
         //
 
         //Имя (обрезаем если слишком длинное)
@@ -454,7 +454,7 @@ public class TargetHud extends HudElement {
         Render2DEngine.renderRoundedGradientRect(context.getMatrices(), HudEditor.getColor(270), HudEditor.getColor(0), HudEditor.getColor(0), HudEditor.getColor(270), getPosX() + 55, getPosY() + 35 - 14, (int) MathUtility.clamp((90 * (health / target.getMaxHealth())), 3, 90), 10, 2f);
 
 
-        FontRenderers.sf_bold.drawCenteredString(context.getMatrices(), hpMode.getValue() == HPmodeEn.HP ? String.valueOf(Math.round(10.0 * getHealth()) / 10.0) : (int) (((Math.round(10.0 * health) / 10.0) / 20f) * 100) + "%", getPosX() + 102, getPosY() + 24f, Render2DEngine.applyOpacity(Colors.WHITE, animationFactor));
+        FontRenderers.sf_bold.drawCenteredString(context.getMatrices(), hpMode.getValue() == HPmodeEn.HP ? String.valueOf(roundHealthToHalf(getHealth())) : (int) ((roundHealthToHalf(health) / 20f) * 100) + "%", getPosX() + 102, getPosY() + 24f, Render2DEngine.applyOpacity(Colors.WHITE, animationFactor));
 
         //Имя ебыря
         FontRenderers.sf_bold.drawString(context.getMatrices(), ModuleManager.media.isEnabled() ? "Protected " : ModuleManager.nameProtect.isEnabled() && target == mc.player ? NameProtect.getCustomName() : target.getName().getString(), getPosX() + 55, getPosY() + 5, Render2DEngine.applyOpacity(Colors.WHITE, animationFactor));
@@ -552,7 +552,7 @@ public class TargetHud extends HudElement {
         FontRenderers.sf_bold_mini.drawString(context.getMatrices(), name, getPosX() + 35, getPosY() + 4, Render2DEngine.applyOpacity(Colors.WHITE, animationFactor));
 
         // HP текст
-        String hpText = hpMode.getValue() == HPmodeEn.HP ? String.valueOf(Math.round(10.0 * getHealth()) / 10.0) : (int) (healthPercent * 100) + "%";
+        String hpText = hpMode.getValue() == HPmodeEn.HP ? String.valueOf(roundHealthToHalf(getHealth())) : (int) (healthPercent * 100) + "%";
         FontRenderers.sf_bold_mini.drawString(context.getMatrices(), hpText, getPosX() + 35, getPosY() + 13, Render2DEngine.applyOpacity(accentColor.getRGB(), animationFactor));
 
         // Полоска HP
@@ -631,6 +631,11 @@ public class TargetHud extends HudElement {
             }
             return (absorp.getValue()) ? numValue + target.getAbsorptionAmount() : numValue;
         } else return (absorp.getValue()) ? target.getHealth() + target.getAbsorptionAmount() : target.getHealth();
+    }
+
+    private double roundHealthToHalf(double health) {
+        // Округляем до 0 или 0.5: умножаем на 2, округляем, делим на 2
+        return Math.round(health * 2.0) / 2.0;
     }
 
     public static void sizeAnimation(MatrixStack matrixStack, double width, double height, double animation) {
