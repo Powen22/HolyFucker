@@ -111,7 +111,7 @@ public class Aura extends Module {
     private final float aimedPitchStep = 2f;    // Шаг pitch когда целимся
     private final float maxPitchStep = 15f;     // Максимальный шаг pitch
     private final float pitchAccelerate = 2f;  // Ускорение pitch
-    private final float attackCooldown = 0.8f; // Атака при 90% кулдауна
+    private final float attackCooldown = 0.85f; // Атака при 90% кулдауна
     private final float attackBaseTime = 0f;   // Без базовой задержки
     private final int attackTickLimit = 0;     // Без лимита тиков (используем кулдаун)
 
@@ -145,6 +145,11 @@ public class Aura extends Module {
     private int hitTicks;
     private int trackticks;
     private boolean lookingAtHitbox;
+    
+    // Отслеживание прыжка на 2 блока
+    private double jumpStartY = 0;
+    private double maxJumpHeight = 0;
+    private boolean wasOnGround = true;
 
     private final Timer delayTimer = new Timer();
     private final Timer pauseTimer = new Timer();
@@ -237,8 +242,17 @@ public class Aura extends Module {
             sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.RELEASE_USE_ITEM, BlockPos.ORIGIN, Direction.DOWN));
 
         boolean sprint = Core.serverSprint;
-        if (sprint && dropSprint.getValue())
+        
+        // Проверяем, был ли прыжок на 2 блока
+        boolean isTwoBlockJump = maxJumpHeight > 1.4 && maxJumpHeight < 2.5;
+        
+        // Если прыжок на 2 блока и мы в воздухе - автоматически сбрасываем спринт для крита
+        if (isTwoBlockJump && !mc.player.isOnGround() && (sprint || mc.player.isSprinting())) {
             disableSprint();
+            sprint = false;
+        } else if (sprint && dropSprint.getValue()) {
+            disableSprint();
+        }
 
         if (rotationMode.is(Mode.Grim))
             sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), rotationYaw, rotationPitch, mc.player.isOnGround()));
@@ -312,6 +326,25 @@ public class Aura extends Module {
         if (mc.player.isUsingItem() && pauseWhileEating.getValue())
             return;
 
+        // Отслеживание прыжка на 2 блока
+        boolean isOnGround = mc.player.isOnGround();
+        if (isOnGround && !wasOnGround) {
+            // Приземлились - сбрасываем отслеживание
+            jumpStartY = 0;
+            maxJumpHeight = 0;
+        } else if (!isOnGround && wasOnGround) {
+            // Начали прыжок - запоминаем начальную позицию
+            jumpStartY = mc.player.getY();
+            maxJumpHeight = 0;
+        } else if (!isOnGround && jumpStartY > 0) {
+            // В воздухе - обновляем максимальную высоту
+            double currentHeight = mc.player.getY() - jumpStartY;
+            if (currentHeight > maxJumpHeight) {
+                maxJumpHeight = currentHeight;
+            }
+        }
+        wasOnGround = isOnGround;
+
         resolvePlayers();
         auraLogic();
         restorePlayers();
@@ -369,6 +402,10 @@ public class Aura extends Module {
         rotationYaw = mc.player.getYaw();
         rotationPitch = mc.player.getPitch();
         delayTimer.reset();
+        // Сброс отслеживания прыжка
+        jumpStartY = 0;
+        maxJumpHeight = 0;
+        wasOnGround = true;
     }
 
     private boolean autoCrit() {
