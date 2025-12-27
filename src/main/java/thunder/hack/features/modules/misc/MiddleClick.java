@@ -10,9 +10,13 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
+import net.minecraft.network.packet.c2s.play.PickFromInventoryC2SPacket;
+import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractItemC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -253,18 +257,27 @@ public class MiddleClick extends Module {
                         if (epSlot1 != -1) {
                             mc.player.getInventory().selectedSlot = epSlot1;
                             mc.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(epSlot1));
-                            InteractionUtility.sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
-                            mc.player.networkHandler.sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
-                            mc.player.getInventory().selectedSlot = originalSlot;
-                            mc.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(originalSlot));
+                            e.addPostAction(() -> {
+                                InteractionUtility.sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
+                                mc.player.networkHandler.sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
+                                mc.player.getInventory().selectedSlot = originalSlot;
+                                mc.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(originalSlot));
+                            });
                         }
                     } else {
                         int epSlot = InventoryUtility.findItemInInventory(Items.ENDER_PEARL).slot();
                         if (epSlot != -1) {
-                            mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, epSlot, mc.player.getInventory().selectedSlot, SlotActionType.SWAP, mc.player);
-                            InteractionUtility.sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
-                            mc.player.networkHandler.sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
-                            mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, epSlot, mc.player.getInventory().selectedSlot, SlotActionType.SWAP, mc.player);
+                            int originalSlot = mc.player.getInventory().selectedSlot;
+                            // Используем быстрый метод PickFromInventory для свапа из инвентаря
+                            mc.player.networkHandler.sendPacket(new PickFromInventoryC2SPacket(epSlot));
+                            mc.player.networkHandler.sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND, BlockPos.ORIGIN, Direction.DOWN));
+                            e.addPostAction(() -> {
+                                InteractionUtility.sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
+                                mc.player.networkHandler.sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
+                                // Возвращаем предмет обратно
+                                mc.player.networkHandler.sendPacket(new PickFromInventoryC2SPacket(epSlot));
+                                mc.player.networkHandler.sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND, BlockPos.ORIGIN, Direction.DOWN));
+                            });
                         }
                     }
                 } else {
