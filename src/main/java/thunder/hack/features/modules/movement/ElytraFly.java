@@ -42,7 +42,7 @@ public class ElytraFly extends Module {
         // Усиление подъема (разное для серверов)
         // Funtime более строгий → меньше подъем (0.051)
         // Другие серверы - очень быстрый подъем (0.12 для максимальной скорости)
-        double liftBoost = isFuntime ? 0.051 : 0.3;
+        double liftBoost = isFuntime ? 0.051 : 10;
         
         // Поиск элитр в хотбаре (слоты 0-8)
         boolean hasElytra = false;
