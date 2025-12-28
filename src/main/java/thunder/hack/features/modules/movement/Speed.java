@@ -310,15 +310,84 @@ public class Speed extends Module {
                 mc.player.jump();
                 return;
             }
-            if (mc.world.getBlockCollisions(mc.player, mc.player.getBoundingBox().expand(-0.29, 0, -0.29).offset(0.0, -3, 0.0f)).iterator().hasNext() && elytraDelay.passedMs(150) && startDelay.passedMs(500)) {
+            
+            // Grim bypass: проверяем коллизии и задержки
+            // Увеличена задержка для обхода ElytraC (слишком частая активация)
+            if (mc.world.getBlockCollisions(mc.player, mc.player.getBoundingBox().expand(-0.29, 0, -0.29).offset(0.0, -3, 0.0f)).iterator().hasNext() 
+                && elytraDelay.passedMs(250) && startDelay.passedMs(500)) {
+                
                 int elytra = InventoryUtility.getElytra();
-                if (elytra == -1) disable(isRu() ? "Для этого режима нужна элитра!" : "You need elytra for this mode!");
-                else sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
-
-                mc.player.setVelocity(mc.player.getVelocity().getX(), 0f, mc.player.getVelocity().getZ());
-                if (isMoving())
-                    MovementUtility.setMotion(0.85);
-                elytraDelay.reset();
+                if (elytra == -1) {
+                    disable(isRu() ? "Для этого режима нужна элитра!" : "You need elytra for this mode!");
+                    return;
+                }
+                
+                // Grim ElytraA: проверяем, что игрок НЕ летит перед активацией
+                // Grim ElytraE: проверяем, что не в режиме полета (creative fly)
+                // Grim ElytraH: проверяем, что не в транспорте
+                if (mc.player.isFallFlying() || mc.player.getAbilities().flying || mc.player.hasVehicle()) {
+                    return;
+                }
+                
+                // Grim ElytraF: убеждаемся, что точно НЕ на земле (clientClaimsLastOnGround)
+                // Grim ElytraB: убеждаемся, что был прыжок (fallDistance > 0.5 для надежности)
+                // Grim ElytraG: проверяем, что нет левитации
+                if (mc.player.fallDistance > 0.5 && !mc.player.isOnGround() && !mc.player.hasStatusEffect(StatusEffects.LEVITATION)) {
+                    // Дополнительная проверка: убеждаемся, что игрок действительно в воздухе
+                    if (mc.player.getY() > mc.player.prevY || mc.player.getVelocity().y < 0) {
+                        // Свап элитр в нагрудник (как в ElytraFly)
+                        if (elytra >= 0 && elytra < 9) {
+                            mc.interactionManager.clickSlot(
+                                mc.player.currentScreenHandler.syncId,
+                                6,  // Слот нагрудника
+                                elytra,  // Слот элитр в хотбаре
+                                SlotActionType.SWAP,
+                                mc.player
+                            );
+                        }
+                        
+                        // Активируем полет
+                        mc.player.startFallFlying();
+                        sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+                        
+                        // Возвращаем элитры обратно в хотбар (мгновенно)
+                        if (elytra >= 0 && elytra < 9) {
+                            mc.interactionManager.clickSlot(
+                                mc.player.currentScreenHandler.syncId,
+                                6,
+                                elytra,
+                                SlotActionType.SWAP,
+                                mc.player
+                            );
+                        }
+                        
+                        // Grim PredictionEngineElytra: используем правильную физику элитр
+                        // НЕ изменяем скорость сразу - пусть физика элитр работает естественно
+                        // Только слегка корректируем вертикальную скорость для плавности
+                        Vec3d velocity = mc.player.getVelocity();
+                        
+                        // Применяем очень мягкую коррекцию вертикальной скорости
+                        // Grim проверяет предсказания движения, поэтому изменения должны быть минимальными
+                        if (velocity.y < -0.3) { // Только если падаем слишком быстро
+                            double newY = Math.max(velocity.y * 0.99, -0.3); // Очень мягкое ограничение
+                            mc.player.setVelocity(velocity.x, newY, velocity.z);
+                        }
+                        
+                        // Горизонтальная скорость устанавливается только если движемся
+                        // И только через небольшое время после активации (не сразу)
+                        if (isMoving() && elytraDelay.passedMs(250 + 50)) {
+                            double targetSpeed = 0.82; // Немного уменьшена для естественности
+                            double[] motion = MovementUtility.forward(targetSpeed);
+                            Vec3d currentVel = mc.player.getVelocity();
+                            // Плавное изменение скорости (не резкое)
+                            double newX = currentVel.x * 0.7 + motion[0] * 0.3;
+                            double newZ = currentVel.z * 0.7 + motion[1] * 0.3;
+                            mc.player.setVelocity(newX, currentVel.y, newZ);
+                        }
+                        
+                        elytraDelay.reset();
+                    }
+                }
             }
         }
     }

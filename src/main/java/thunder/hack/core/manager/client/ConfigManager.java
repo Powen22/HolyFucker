@@ -79,7 +79,7 @@ public class ConfigManager implements IManager {
     }
 
     public static @NotNull String getConfigDate(String name) {
-        File file = new File(CONFIGS_FOLDER, name + ".th");
+        File file = new File(CONFIGS_FOLDER, name + ".hf");
         if (!file.exists())
             return "none";
 
@@ -87,7 +87,7 @@ public class ConfigManager implements IManager {
     }
 
     public void load(String name, String category) {
-        File file = new File(CONFIGS_FOLDER, name + ".th");
+        File file = new File(CONFIGS_FOLDER, name + ".hf");
         if (!file.exists()) {
             Command.sendMessage(isRu() ? "Конфига " + name + " не существует!" : "Config " + name + " does not exist!");
             return;
@@ -102,7 +102,7 @@ public class ConfigManager implements IManager {
     }
 
     public void loadBinds(String name) {
-        File file = new File(CONFIGS_FOLDER, name + ".th");
+        File file = new File(CONFIGS_FOLDER, name + ".hf");
         if (!file.exists()) {
             Command.sendMessage(isRu() ? "Конфига " + name + " не существует!" : "Config " + name + " does not exist!");
             return;
@@ -134,7 +134,7 @@ public class ConfigManager implements IManager {
     }
 
     public void load(String name) {
-        File file = new File(CONFIGS_FOLDER, name + ".th");
+        File file = new File(CONFIGS_FOLDER, name + ".hf");
         if (!file.exists()) {
             Command.sendMessage(isRu() ? "Конфига " + name + " не существует!" : "Config " + name + " does not exist!");
 
@@ -151,8 +151,8 @@ public class ConfigManager implements IManager {
 
     public void loadCloud(String name) {
         Command.sendMessage(isRu() ? "Загружаю.." : "Downloading..");
-        try (BufferedInputStream in = new BufferedInputStream(new URL("https://raw.githubusercontent.com/Pan4ur/THRecodeUtil/main/configs/" + name + ".th").openStream());
-             FileOutputStream fileOutputStream = new FileOutputStream(new File(CONFIGS_FOLDER, name + ".th"))) {
+        try (BufferedInputStream in = new BufferedInputStream(new URL("https://raw.githubusercontent.com/Pan4ur/THRecodeUtil/main/configs/" + name + ".hf").openStream());
+             FileOutputStream fileOutputStream = new FileOutputStream(new File(CONFIGS_FOLDER, name + ".hf"))) {
             byte[] dataBuffer = new byte[1024];
             int bytesRead;
             while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1)
@@ -165,7 +165,7 @@ public class ConfigManager implements IManager {
     }
 
     public void loadModuleOnly(String name, Module module) {
-        File file = new File(CONFIGS_FOLDER, name + ".th");
+        File file = new File(CONFIGS_FOLDER, name + ".hf");
         if (!file.exists()) {
             Command.sendMessage(isRu() ? "Конфига " + name + " не существует!" : "Config " + name + " does not exist!");
             return;
@@ -233,7 +233,7 @@ public class ConfigManager implements IManager {
     }
 
     public void save(String name) {
-        File file = new File(CONFIGS_FOLDER, name + ".th");
+        File file = new File(CONFIGS_FOLDER, name + ".hf");
         if (file.exists()) {
             Command.sendMessage(isRu() ? "Перезаписываем " + name + "..." : "Overwriting " + name + "...");
             file.delete();
@@ -414,7 +414,7 @@ public class ConfigManager implements IManager {
     }
 
     public void delete(String name) {
-        File file = new File(CONFIGS_FOLDER, name + ".th");
+        File file = new File(CONFIGS_FOLDER, name + ".hf");
         if (!file.exists()) {
             return;
         }
@@ -426,8 +426,8 @@ public class ConfigManager implements IManager {
         if (!MAIN_FOLDER.exists() || CONFIGS_FOLDER.listFiles() == null) return list;
 
         if (CONFIGS_FOLDER.listFiles() != null) {
-            for (File file : Arrays.stream(Objects.requireNonNull(CONFIGS_FOLDER.listFiles())).filter(f -> f.getName().endsWith(".th")).toList()) {
-                list.add(file.getName().replace(".th", ""));
+            for (File file : Arrays.stream(Objects.requireNonNull(CONFIGS_FOLDER.listFiles())).filter(f -> f.getName().endsWith(".hf")).toList()) {
+                list.add(file.getName().replace(".hf", ""));
             }
         }
         return list;
@@ -451,12 +451,12 @@ public class ConfigManager implements IManager {
         try {
             if (file.exists()) {
                 FileWriter writer = new FileWriter(file);
-                writer.write(currentConfig.getName().replace(".th", ""));
+                writer.write(currentConfig.getName().replace(".hf", ""));
                 writer.close();
             } else {
                 file.createNewFile();
                 FileWriter writer = new FileWriter(file);
-                writer.write(currentConfig.getName().replace(".th", ""));
+                writer.write(currentConfig.getName().replace(".hf", ""));
                 writer.close();
             }
         } catch (Exception e) {
@@ -477,7 +477,7 @@ public class ConfigManager implements IManager {
         } catch (Exception e) {
             LogUtils.getLogger().warn(e.getMessage());
         }
-        currentConfig = new File(CONFIGS_FOLDER, name + ".th");
+        currentConfig = new File(CONFIGS_FOLDER, name + ".hf");
         return currentConfig;
     }
 }
