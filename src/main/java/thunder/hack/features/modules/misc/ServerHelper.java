@@ -2,36 +2,44 @@ package thunder.hack.features.modules.misc;
 
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.CloseHandledScreenC2SPacket;
-import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractItemC2SPacket;
-import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
-import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import thunder.hack.gui.font.FontRenderers;
+import thunder.hack.HolyFacker;
+import thunder.hack.core.Managers;
 import thunder.hack.events.impl.EventSync;
 import thunder.hack.events.impl.PacketEvent;
 import thunder.hack.features.modules.Module;
+import thunder.hack.gui.notification.Notification;
 import thunder.hack.setting.Setting;
 import thunder.hack.setting.impl.Bind;
+import thunder.hack.utility.ThunderUtility;
 import thunder.hack.utility.Timer;
 import thunder.hack.utility.player.InventoryUtility;
-import thunder.hack.utility.player.InteractionUtility;
+import thunder.hack.utility.player.SearchInvResult;
 import thunder.hack.utility.render.Render2DEngine;
 import thunder.hack.features.modules.client.HudEditor;
 
 import java.awt.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static thunder.hack.features.modules.client.ClientSettings.isRu;
 
 public class ServerHelper extends Module {
     public ServerHelper() {
@@ -102,18 +110,22 @@ public class ServerHelper extends Module {
         if (fullNullCheck()) return;
 
         if (isKeyPressed(desorient.getValue().getKey()) && disorientTimer.passedMs(500) && mc.currentScreen == null) {
-            usePearlMethod(event, Items.ENDER_EYE);
-            disorientTimer.reset();
+            if (use(InventoryUtility.findInHotBar(i -> i.getItem() == Items.ENDER_EYE),
+                    InventoryUtility.findInInventory(i -> i.getItem() == Items.ENDER_EYE))) {
+                disorientTimer.reset();
+            }
         }
 
         if (isKeyPressed(trap.getValue().getKey()) && trapTimer.passedMs(500) && mc.currentScreen == null) {
-            usePearlMethod(event, Items.NETHERITE_SCRAP);
-            trapTimer.reset();
+            if (use(InventoryUtility.findInHotBar(i -> i.getItem() == Items.NETHERITE_SCRAP),
+                    InventoryUtility.findInInventory(i -> i.getItem() == Items.NETHERITE_SCRAP))) {
+                trapTimer.reset();
+            }
         }
     }
 
     public void onRenderChest(DrawContext context, Slot slot) {
-        if (mc.player.currentScreenHandler instanceof GenericContainerScreenHandler) {
+        if (mc.player.currentScreenHandler instanceof GenericContainerScreenHandler chest) {
             String title = mc.currentScreen != null ? mc.currentScreen.getTitle().getString() : "";
             if (title.contains("Аукцион") || title.contains("Поиск") || title.contains("Auction")) {
                 // Подсветка самого дешевого лота золотым цветом
@@ -198,52 +210,20 @@ public class ServerHelper extends Module {
         return -1;
     }
 
-    /**
-     * Использует предмет методом свапа как для Перла в MiddleClick
-     * Для предметов в инвентаре свапает в выбранный слот, а не в оффхенд
-     */
-    private void usePearlMethod(EventSync event, net.minecraft.item.Item item) {
-        int itemSlot = InventoryUtility.findItemInHotBar(item).slot();
-        
-        if (itemSlot != -1) {
-            // Предмет в хотбаре - используем быстрый метод через UpdateSelectedSlotC2SPacket
-            int originalSlot = mc.player.getInventory().selectedSlot;
-            mc.player.getInventory().selectedSlot = itemSlot;
-            mc.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(itemSlot));
-            event.addPostAction(() -> {
-                InteractionUtility.sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
-                mc.player.networkHandler.sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
-                mc.player.getInventory().selectedSlot = originalSlot;
-                mc.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(originalSlot));
-            });
-        } else {
-            // Предмет в инвентаре - используем clickSlot для свапа в выбранный слот
-            int itemSlotInv = InventoryUtility.findItemInInventory(item).slot();
-            if (itemSlotInv != -1) {
-                int selectedSlot = mc.player.getInventory().selectedSlot;
-                // Свапаем предмет из инвентаря в выбранный слот
-                mc.interactionManager.clickSlot(
-                    mc.player.currentScreenHandler.syncId,
-                    itemSlotInv,
-                    selectedSlot,
-                    SlotActionType.SWAP,
-                    mc.player
-                );
-                event.addPostAction(() -> {
-                    InteractionUtility.sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
-                    mc.player.networkHandler.sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
-                    // Возвращаем предмет обратно в инвентарь
-                    mc.interactionManager.clickSlot(
-                        mc.player.currentScreenHandler.syncId,
-                        itemSlotInv,
-                        selectedSlot,
-                        SlotActionType.SWAP,
-                        mc.player
-                    );
-                    sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
-                });
-            }
+    private boolean use(SearchInvResult result, SearchInvResult invResult) {
+        if (result.found()) {
+            InventoryUtility.saveAndSwitchTo(result.slot());
+            sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
+            InventoryUtility.returnSlot();
+            return true;
+        } else if (invResult.found()) {
+            clickSlot(invResult.slot(), mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
+            sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
+            clickSlot(invResult.slot(), mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
+            sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
+            return true;
         }
+        return false;
     }
 
     private static class AuctionItem {
