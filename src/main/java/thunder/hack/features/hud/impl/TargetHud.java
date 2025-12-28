@@ -49,9 +49,10 @@ public class TargetHud extends HudElement {
     private final Setting<HPmodeEn> hpMode = new Setting<>("HP Mode", HPmodeEn.HP);
     private final Setting<ImageModeEn> imageMode = new Setting<>("Image", ImageModeEn.Anime);
     private final Setting<ModeEn> Mode = new Setting<>("Mode", ModeEn.HolyFacker);
-    private final Setting<ColorSetting> color = new Setting<>("Color1", new ColorSetting(-16492289), v -> Mode.is(ModeEn.CelkaPasta));
-    private final Setting<ColorSetting> color2 = new Setting<>("Color2", new ColorSetting(-16492289), v -> Mode.is(ModeEn.CelkaPasta));
+    private final Setting<ColorSetting> color = new Setting<>("Color1", new ColorSetting(-16492289), v -> Mode.getValue() == ModeEn.CelkaPasta);
+    private final Setting<ColorSetting> color2 = new Setting<>("Color2", new ColorSetting(-16492289), v -> Mode.getValue() == ModeEn.CelkaPasta);
     private final Setting<Boolean> funTimeHP = new Setting<>("FunTimeHP", false);
+    private final Setting<Boolean> mini = new Setting<>("Mini", false, v -> Mode.getValue() == ModeEn.NurikZapen);
     private final Setting<Boolean> absorp = new Setting<>("Absorption", true);
 
     private static Identifier custom;
@@ -106,7 +107,7 @@ public class TargetHud extends HudElement {
         context.getMatrices().push();
 
         if (!HudEditor.hudStyle.is(HudEditor.HudStyle.Blurry)) {
-            if (Mode.is(ModeEn.NurikZapen))
+            if (Mode.is(ModeEn.NurikZapen) && mini.getValue())
                 sizeAnimation(context.getMatrices(), getPosX() + 45 + animX.getValue(), getPosY() + 15 + animY.getValue(), animation.getAnimationd());
             else if (Mode.is(ModeEn.Starter))
                 sizeAnimation(context.getMatrices(), getPosX() + 47 + animX.getValue(), getPosY() + 17 + animY.getValue(), animation.getAnimationd());
@@ -119,7 +120,12 @@ public class TargetHud extends HudElement {
             switch (Mode.getValue()) {
                 case HolyFacker -> renderHolyFacker(context, health, animationFactor);
                 case CelkaPasta -> renderCelkaPasta(context, health);
-                case NurikZapen -> renderMiniNurik(context, health, animationFactor);
+                case NurikZapen -> {
+                    if (mini.getValue())
+                        renderMiniNurik(context, health, animationFactor);
+                    else
+                        renderNurik(context, health, animationFactor);
+                }
                 case Starter -> renderStarter(context, health, animationFactor);
             }
         }
@@ -174,7 +180,7 @@ public class TargetHud extends HudElement {
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
         FontRenderers.modules.drawString(context.getMatrices(), ModuleManager.media.isEnabled() ? "Protected " : ModuleManager.nameProtect.isEnabled() && target == mc.player ? NameProtect.getCustomName() : target.getName().getString(), getPosX() + 50, getPosY() + 7, -1);
-        FontRenderers.modules.drawCenteredString(context.getMatrices(), hpMode.getValue() == HPmodeEn.HP ? String.valueOf(roundHealthToHalf(getHealth())) : ((roundHealthToHalf(getHealth()) / 20f) * 100 + "%"), getPosX() + 81f, getPosY() + 34f, -1);
+        FontRenderers.modules.drawCenteredString(context.getMatrices(), hpMode.getValue() == HPmodeEn.HP ? String.valueOf(Math.round(10.0 * getHealth()) / 10.0) : (((Math.round(10.0 * getHealth()) / 10.0) / 20f) * 100 + "%"), getPosX() + 81f, getPosY() + 34f, -1);
 
 
         if (target instanceof PlayerEntity pe) {
@@ -234,7 +240,7 @@ public class TargetHud extends HudElement {
             Render2DEngine.renderRoundedGradientRect(context.getMatrices(), HudEditor.getColor(270), HudEditor.getColor(0), HudEditor.getColor(0), HudEditor.getColor(270), getPosX() + 48, getPosY() + 32, (int) MathUtility.clamp((85 * (health / target.getMaxHealth())), 8, 85), 11, 4f);
         }
 
-        FontRenderers.sf_bold.drawCenteredString(context.getMatrices(), hpMode.getValue() == HPmodeEn.HP ? String.valueOf(roundHealthToHalf(getHealth())) : ((roundHealthToHalf(getHealth()) / 20f) * 100 + "%"), getPosX() + 92f, getPosY() + 35f,
+        FontRenderers.sf_bold.drawCenteredString(context.getMatrices(), hpMode.getValue() == HPmodeEn.HP ? String.valueOf(Math.round(10.0 * getHealth()) / 10.0) : (((Math.round(10.0 * getHealth()) / 10.0) / 20f) * 100 + "%"), getPosX() + 92f, getPosY() + 35f,
                 Render2DEngine.applyOpacity(Colors.WHITE, animationFactor));
         //
 
@@ -312,7 +318,7 @@ public class TargetHud extends HudElement {
             Render2DEngine.renderRoundedGradientRect(context.getMatrices(), HudEditor.getColor(270), HudEditor.getColor(0), HudEditor.getColor(0), HudEditor.getColor(270), getPosX() + 38, getPosY() + 25, (int) MathUtility.clamp((52 * (health / target.getMaxHealth())), 8, 52), 7, 2f);
         }
 
-        FontRenderers.sf_bold_mini.drawCenteredString(context.getMatrices(), hpMode.getValue() == HPmodeEn.HP ? String.valueOf(roundHealthToHalf(getHealth())) : ((roundHealthToHalf(getHealth()) / 20f) * 100 + "%"), getPosX() + 65, getPosY() + 27f, Render2DEngine.applyOpacity(Colors.WHITE, animationFactor));
+        FontRenderers.sf_bold_mini.drawCenteredString(context.getMatrices(), hpMode.getValue() == HPmodeEn.HP ? String.valueOf(Math.round(10.0 * getHealth()) / 10.0) : (((Math.round(10.0 * getHealth()) / 10.0) / 20f) * 100 + "%"), getPosX() + 65, getPosY() + 27f, Render2DEngine.applyOpacity(Colors.WHITE, animationFactor));
         //
 
         //Имя (обрезаем если слишком длинное)
@@ -454,7 +460,7 @@ public class TargetHud extends HudElement {
         Render2DEngine.renderRoundedGradientRect(context.getMatrices(), HudEditor.getColor(270), HudEditor.getColor(0), HudEditor.getColor(0), HudEditor.getColor(270), getPosX() + 55, getPosY() + 35 - 14, (int) MathUtility.clamp((90 * (health / target.getMaxHealth())), 3, 90), 10, 2f);
 
 
-        FontRenderers.sf_bold.drawCenteredString(context.getMatrices(), hpMode.getValue() == HPmodeEn.HP ? String.valueOf(roundHealthToHalf(getHealth())) : (int) ((roundHealthToHalf(health) / 20f) * 100) + "%", getPosX() + 102, getPosY() + 24f, Render2DEngine.applyOpacity(Colors.WHITE, animationFactor));
+        FontRenderers.sf_bold.drawCenteredString(context.getMatrices(), hpMode.getValue() == HPmodeEn.HP ? String.valueOf(Math.round(10.0 * getHealth()) / 10.0) : (int) (((Math.round(10.0 * health) / 10.0) / 20f) * 100) + "%", getPosX() + 102, getPosY() + 24f, Render2DEngine.applyOpacity(Colors.WHITE, animationFactor));
 
         //Имя ебыря
         FontRenderers.sf_bold.drawString(context.getMatrices(), ModuleManager.media.isEnabled() ? "Protected " : ModuleManager.nameProtect.isEnabled() && target == mc.player ? NameProtect.getCustomName() : target.getName().getString(), getPosX() + 55, getPosY() + 5, Render2DEngine.applyOpacity(Colors.WHITE, animationFactor));
@@ -552,7 +558,7 @@ public class TargetHud extends HudElement {
         FontRenderers.sf_bold_mini.drawString(context.getMatrices(), name, getPosX() + 35, getPosY() + 4, Render2DEngine.applyOpacity(Colors.WHITE, animationFactor));
 
         // HP текст
-        String hpText = hpMode.getValue() == HPmodeEn.HP ? String.valueOf(roundHealthToHalf(getHealth())) : (int) (healthPercent * 100) + "%";
+        String hpText = hpMode.getValue() == HPmodeEn.HP ? String.valueOf(Math.round(10.0 * getHealth()) / 10.0) : (int) (healthPercent * 100) + "%";
         FontRenderers.sf_bold_mini.drawString(context.getMatrices(), hpText, getPosX() + 35, getPosY() + 13, Render2DEngine.applyOpacity(accentColor.getRGB(), animationFactor));
 
         // Полоска HP
@@ -631,11 +637,6 @@ public class TargetHud extends HudElement {
             }
             return (absorp.getValue()) ? numValue + target.getAbsorptionAmount() : numValue;
         } else return (absorp.getValue()) ? target.getHealth() + target.getAbsorptionAmount() : target.getHealth();
-    }
-
-    private double roundHealthToHalf(double health) {
-        // Округляем до 0 или 0.5: умножаем на 2, округляем, делим на 2
-        return Math.round(health * 2.0) / 2.0;
     }
 
     public static void sizeAnimation(MatrixStack matrixStack, double width, double height, double animation) {

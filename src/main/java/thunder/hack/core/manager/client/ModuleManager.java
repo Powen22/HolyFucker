@@ -165,6 +165,7 @@ public class ModuleManager implements IManager {
     public static Hotbar hotbar = new Hotbar();
     public static HitBox hitBox = new HitBox();
     public static Flight flight = new Flight();
+    public static ElytraFly elytraFly = new ElytraFly();
     public static Coords coords = new Coords();
     public static AutoEZ autoEZ = new AutoEZ();
     public static AimBot aimBot = new AimBot();
