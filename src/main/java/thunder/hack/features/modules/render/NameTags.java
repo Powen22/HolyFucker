@@ -157,6 +157,10 @@ public class NameTags extends Module {
             if (FriendManager.friends.stream().anyMatch(i -> i.contains(ent.getDisplayName().getString())) && NameProtect.hideFriends.getValue() && ModuleManager.nameProtect.isEnabled()) {
                 final_string += NameProtect.getCustomName() + " ";
             } else {
+                // Добавляем [F] если игрок в друзьях
+                if (Managers.FRIEND.isFriend(ent)) {
+                    final_string += Formatting.GREEN + "[F] " + Formatting.WHITE;
+                }
                 final_string += playerName + " ";
             }
 

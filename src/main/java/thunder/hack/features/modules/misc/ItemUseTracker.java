@@ -3,6 +3,7 @@ package thunder.hack.features.modules.misc;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.PotionContentsComponent;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
@@ -16,6 +17,7 @@ import thunder.hack.features.modules.combat.AntiBot;
 import thunder.hack.gui.notification.Notification;
 import thunder.hack.setting.Setting;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
+import net.minecraft.network.packet.s2c.play.EntityStatusS2CPacket;
 import net.minecraft.entity.EntityType;
 
 import java.util.HashMap;
@@ -30,6 +32,7 @@ public class ItemUseTracker extends Module {
     private final Setting<Boolean> trackGapple = new Setting<>("TrackGapple", true);
     private final Setting<Boolean> trackPotions = new Setting<>("TrackPotions", true);
     private final Setting<Boolean> trackPearls = new Setting<>("TrackPearls", true);
+    private final Setting<Boolean> trackTotems = new Setting<>("TrackTotems", true);
     private final Setting<Boolean> notification = new Setting<>("Notification", true);
     private final Setting<Boolean> ignoreSelf = new Setting<>("IgnoreSelf", true);
     private final Setting<Integer> range = new Setting<>("Range", 50, 10, 100);
@@ -37,11 +40,14 @@ public class ItemUseTracker extends Module {
     // Отслеживаем кто что использует
     private final Map<String, ItemStack> playerUsingItem = new HashMap<>();
     private final Map<String, Integer> playerUseTicksLeft = new HashMap<>();
+    // Отслеживаем тотемы в оффхенде игроков
+    private final Map<String, ItemStack> playerOffhandTotem = new HashMap<>();
 
     @Override
     public void onDisable() {
         playerUsingItem.clear();
         playerUseTicksLeft.clear();
+        playerOffhandTotem.clear();
     }
 
     @Override
@@ -55,6 +61,18 @@ public class ItemUseTracker extends Module {
             if (mc.player.distanceTo(player) > range.getValue()) continue;
 
             String playerName = player.getName().getString();
+
+            // Отслеживаем тотем в оффхенде
+            if (trackTotems.getValue()) {
+                ItemStack offhandStack = player.getOffHandStack();
+                if (offhandStack.getItem() == Items.TOTEM_OF_UNDYING) {
+                    // Сохраняем тотем в оффхенде
+                    playerOffhandTotem.put(playerName, offhandStack.copy());
+                } else {
+                    // Если тотема нет в оффхенде, удаляем из отслеживания
+                    playerOffhandTotem.remove(playerName);
+                }
+            }
 
             if (player.isUsingItem()) {
                 ItemStack activeItem = player.getActiveItem();
@@ -91,6 +109,35 @@ public class ItemUseTracker extends Module {
 
     @EventHandler
     public void onPacketReceive(PacketEvent.@NotNull Receive e) {
+        // Отслеживаем использование тотема
+        if (e.getPacket() instanceof EntityStatusS2CPacket status && trackTotems.getValue()) {
+            if (status.getStatus() == 35) { // 35 = totem of undying used
+                Entity entity = status.getEntity(mc.world);
+                if (entity instanceof PlayerEntity player) {
+                    if (ignoreSelf.getValue() && player == mc.player) return;
+                    if (AntiBot.bots.contains(player)) return;
+                    if (mc.player.distanceTo(player) > range.getValue()) return;
+                    
+                    String playerName = player.getName().getString();
+                    ItemStack totemStack = playerOffhandTotem.get(playerName);
+                    
+                    if (totemStack != null) {
+                        reportTotemUse(player, totemStack);
+                        playerOffhandTotem.remove(playerName);
+                    } else {
+                        // Если не нашли сохраненный тотем, создаем новый с проверкой зачарования
+                        ItemStack currentOffhand = player.getOffHandStack();
+                        if (currentOffhand.getItem() == Items.TOTEM_OF_UNDYING) {
+                            reportTotemUse(player, currentOffhand);
+                        } else {
+                            // Если тотема нет в оффхенде, значит был обычный
+                            reportTotemUse(player, null);
+                        }
+                    }
+                }
+            }
+        }
+        
         if (!(e.getPacket() instanceof EntitySpawnS2CPacket spawn)) return;
         
         // Отслеживаем бросок перла
@@ -223,6 +270,31 @@ public class ItemUseTracker extends Module {
     private void reportPearlThrow(PlayerEntity player) {
         String playerName = player.getName().getString();
         reportUse(playerName, Formatting.DARK_PURPLE + "Ender Pearl");
+    }
+
+    private void reportTotemUse(PlayerEntity player, ItemStack totemStack) {
+        String playerName = player.getName().getString();
+        boolean isEnchanted = false;
+        String totemName = "Тотем бессмертия";
+        
+        if (totemStack != null && !totemStack.isEmpty()) {
+            isEnchanted = totemStack.hasEnchantments();
+            if (isEnchanted) {
+                // Получаем название тотема (как он был подписан)
+                totemName = totemStack.getName().getString();
+            }
+        }
+        
+        // Зеленый кружок для зачарованного, красный для обычного
+        String circle = isEnchanted ? Formatting.GREEN + "●" : Formatting.RED + "●";
+        String message = Formatting.WHITE + playerName + Formatting.GRAY + " потерял " + circle + " " + totemName;
+        
+        sendMessage(message);
+        
+        if (notification.getValue()) {
+            String cleanTotemName = Formatting.strip(totemName);
+            Managers.NOTIFICATION.publicity(playerName, "потерял " + cleanTotemName, 3, Notification.Type.INFO);
+        }
     }
 
     private void reportUse(String playerName, String itemInfo) {

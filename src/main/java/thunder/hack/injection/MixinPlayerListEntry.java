@@ -3,6 +3,9 @@ package thunder.hack.injection;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.util.SkinTextures;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import thunder.hack.core.Managers;
 import thunder.hack.core.manager.client.ModuleManager;
 import thunder.hack.utility.OptifineCapes;
 import thunder.hack.utility.ThunderUtility;
@@ -40,6 +44,21 @@ public class MixinPlayerListEntry {
             SkinTextures prev = cir.getReturnValue();
             SkinTextures newTextures = new SkinTextures(prev.texture(), prev.textureUrl(), customCapeTexture, customCapeTexture, prev.model(), prev.secure());
             cir.setReturnValue(newTextures);
+        }
+    }
+
+    @Inject(method = "getDisplayName", at = @At("RETURN"), cancellable = true)
+    private void getDisplayNameHook(CallbackInfoReturnable<Text> cir) {
+        PlayerListEntry entry = (PlayerListEntry) (Object) this;
+        String playerName = entry.getProfile().getName();
+        
+        // Добавляем [F] если игрок в друзьях
+        if (Managers.FRIEND.isFriend(playerName)) {
+            Text originalText = cir.getReturnValue();
+            // Ярко-зеленый цвет для [F]
+            TextColor greenColor = TextColor.fromRgb(0x00FF00); // Ярко-зеленый RGB
+            Text modifiedText = Text.literal("[F] ").setStyle(Style.EMPTY.withColor(greenColor)).append(originalText);
+            cir.setReturnValue(modifiedText);
         }
     }
 

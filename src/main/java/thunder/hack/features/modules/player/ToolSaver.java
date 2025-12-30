@@ -5,7 +5,6 @@ import thunder.hack.features.modules.Module;
 import thunder.hack.setting.Setting;
 
 import static thunder.hack.features.modules.client.ClientSettings.isRu;
-import static thunder.hack.features.modules.combat.AutoTotem.findNearestCurrentItem;
 
 public class ToolSaver extends Module {
     public ToolSaver() {
@@ -27,5 +26,12 @@ public class ToolSaver extends Module {
             mc.player.getInventory().selectedSlot = findNearestCurrentItem();
             sendMessage(isRu() ? "Твой инструмент почти сломался!" : "Your tool is almost broken!");
         }
+    }
+
+    private int findNearestCurrentItem() {
+        int i = mc.player.getInventory().selectedSlot;
+        if (i == 8) return 7;
+        if (i == 0) return 1;
+        return i - 1;
     }
 }
