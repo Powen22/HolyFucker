@@ -7,6 +7,7 @@ import net.minecraft.scoreboard.Team;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.GameMode;
+import thunder.hack.core.manager.client.ConfigManager;
 import thunder.hack.features.cmd.impl.StaffCommand;
 import thunder.hack.gui.font.FontRenderers;
 import thunder.hack.features.hud.HudElement;
@@ -15,6 +16,7 @@ import thunder.hack.utility.render.Render2DEngine;
 import thunder.hack.utility.render.animation.AnimationUtility;
 
 import java.awt.*;
+import java.io.*;
 import java.util.List;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -25,11 +27,26 @@ public class StaffBoard extends HudElement {
     private List<String> players = new ArrayList<>();
     private List<String> notSpec = new ArrayList<>();
     private Map<String, Identifier> skinMap = new HashMap<>();
+    private static final Set<String> staffList = new HashSet<>(); // Список игроков, которые когда-либо были в gm3
 
     private float vAnimation, hAnimation;
 
+    private static boolean loaded = false;
+
     public StaffBoard() {
         super("StaffBoard", 50, 50);
+        if (!loaded) {
+            loadStaffList();
+            loaded = true;
+        }
+    }
+
+    private static boolean check(String prefix) {
+        if (prefix == null || prefix.isEmpty()) return false;
+        String lower = prefix.toLowerCase();
+        return lower.contains("admin") || lower.contains("mod") || lower.contains("helper")
+                || lower.contains("staff") || lower.contains("owner") || lower.contains("dev")
+                || lower.contains("developer") || lower.contains("manager") || lower.contains("builder");
     }
 
     public static List<String> getOnlinePlayer() {
@@ -42,27 +59,40 @@ public class StaffBoard extends HudElement {
 
     public static List<String> getOnlinePlayerD() {
         List<String> S = new ArrayList<>();
-        for (PlayerListEntry player : mc.player.networkHandler.getPlayerList()) {
-            if (mc.isInSingleplayer() || player.getScoreboardTeam() == null) break;
-            String prefix = player.getScoreboardTeam().getPrefix().getString();
-            if (check(Formatting.strip(prefix).toLowerCase())
-                    || StaffCommand.staffNames.toString().toLowerCase().contains(player.getProfile().getName().toLowerCase())
-                    || player.getProfile().getName().toLowerCase().contains("1danil_mansoru1")
-                    || player.getProfile().getName().toLowerCase().contains("barslan_")
-                    || player.getProfile().getName().toLowerCase().contains("timmings")
-                    || player.getProfile().getName().toLowerCase().contains("timings")
-                    || player.getProfile().getName().toLowerCase().contains("ruthless")
-                    || player.getScoreboardTeam().getPrefix().getString().contains("YT")
-                    || (player.getScoreboardTeam().getPrefix().getString().contains("Y") && player.getScoreboardTeam().getPrefix().getString().contains("T"))) {
-                String name = Arrays.asList(player.getScoreboardTeam().getPlayerList().toArray()).toString().replace("[", "").replace("]", "");
 
-                if (player.getGameMode() == GameMode.SPECTATOR) {
-                    S.add(player.getScoreboardTeam().getPrefix().getString() + name + ":gm3");
-                    continue;
+        for (PlayerListEntry player : mc.player.networkHandler.getPlayerList()) {
+            if (mc.isInSingleplayer() || player.getScoreboardTeam() == null) continue;
+
+            String profileName = player.getProfile().getName();
+            String displayName = Arrays.asList(player.getScoreboardTeam().getPlayerList().toArray())
+                    .toString().replace("[", "").replace("]", "");
+
+            String profileNameLower = profileName.toLowerCase();
+            String displayNameLower = displayName.toLowerCase();
+
+            // Проверяем, есть ли игрок в списке модерации
+            boolean isInStaffCommand = StaffCommand.staffNames.stream()
+                    .anyMatch(staffName -> staffName.equalsIgnoreCase(profileName) ||
+                            staffName.equalsIgnoreCase(displayName));
+
+            // Проверяем, был ли игрок раньше в gm3
+            boolean wasInGm3 = staffList.contains(profileNameLower) || staffList.contains(displayNameLower);
+
+            // Если игрок сейчас в gm3 - ЗАПОМИНАЕМ его и показываем
+            if (player.getGameMode() == GameMode.SPECTATOR) {
+                // ДОБАВЛЯЕМ В ПАМЯТЬ только если в gm3
+                boolean wasAdded = staffList.add(profileNameLower) || staffList.add(displayNameLower);
+                if (wasAdded) {
+                    saveStaffList(); // Сохраняем при добавлении нового игрока
                 }
-                S.add(player.getScoreboardTeam().getPrefix().getString() + name + ":active");
+                S.add(displayName + ":gm3");
+            }
+            // Если игрок НЕ в gm3, но в списке модерации или был раньше в gm3
+            else if (isInStaffCommand || wasInGm3) {
+                S.add(displayName + ":active");
             }
         }
+
         return S;
     }
 
@@ -90,13 +120,6 @@ public class StaffBoard extends HudElement {
         return list;
     }
 
-    public static boolean check(String name) {
-        if (mc.getCurrentServerEntry() != null && mc.getCurrentServerEntry().address.contains("mcfunny")) {
-            return name.contains("helper") || name.contains("moder") || name.contains("модер") || name.contains("хелпер");
-        }
-        return name.contains("helper") || name.contains("moder") || name.contains("admin") || name.contains("owner") || name.contains("curator") || name.contains("куратор") || name.contains("модер") || name.contains("админ") || name.contains("хелпер") || name.contains("поддержка") || name.contains("сотрудник") || name.contains("зам") || name.contains("стажёр");
-    }
-
     public void onRender2D(DrawContext context) {
         super.onRender2D(context);
         List<String> all = new java.util.ArrayList<>();
@@ -104,7 +127,8 @@ public class StaffBoard extends HudElement {
         all.addAll(notSpec);
 
         int y_offset1 = 0;
-        float max_width = 50;
+        float max_width = 0;
+        float titleWidth = FontRenderers.sf_bold.getStringWidth("Staff");
 
         float pointerX = 0;
         for (String player : all) {
@@ -113,10 +137,11 @@ public class StaffBoard extends HudElement {
 
             y_offset1 += 9;
 
-            float nameWidth = FontRenderers.sf_bold_mini.getStringWidth(player.split(":")[0]);
-            float timeWidth = FontRenderers.sf_bold_mini.getStringWidth((player.split(":")[1].equalsIgnoreCase("vanish") ? Formatting.RED + "V" : player.split(":")[1].equalsIgnoreCase("gm3") ? Formatting.RED + "V " + Formatting.YELLOW + "(GM3)" : Formatting.GREEN + "Z"));
+            String playerName = player.split(":")[0];
+            float nameWidth = FontRenderers.sf_bold_mini.getStringWidth(playerName);
+            float timeWidth = FontRenderers.sf_bold_mini.getStringWidth((player.split(":")[1].equalsIgnoreCase("vanish") ? Formatting.RED + "V" : player.split(":")[1].equalsIgnoreCase("gm3") ? Formatting.YELLOW + "Spec" : player.split(":")[1].equalsIgnoreCase("active") ? Formatting.GREEN + "A" : Formatting.GREEN + "Z"));
 
-            float width = (nameWidth + timeWidth) * 1.4f;
+            float width = nameWidth + timeWidth + 20; // 20 - отступы (13 для иконки + 7 для правого отступа)
 
             if (width > max_width)
                 max_width = width;
@@ -124,6 +149,10 @@ public class StaffBoard extends HudElement {
             if (timeWidth > pointerX)
                 pointerX = timeWidth;
         }
+
+        // Минимальная ширина должна быть не меньше ширины заголовка "Staff" + отступы
+        if (max_width < titleWidth + 8)
+            max_width = titleWidth + 8;
 
         vAnimation = AnimationUtility.fast(vAnimation, 14 + y_offset1, 15);
         hAnimation = AnimationUtility.fast(hAnimation, max_width, 15);
@@ -145,7 +174,6 @@ public class StaffBoard extends HudElement {
             }
         }
 
-
         Render2DEngine.addWindow(context.getMatrices(), getPosX(), getPosY(), getPosX() + hAnimation, getPosY() + vAnimation, 1f);
         int y_offset = 0;
 
@@ -158,10 +186,10 @@ public class StaffBoard extends HudElement {
                 context.drawTexture(tex, (int) (getPosX() + 3), (int) (getPosY() + 16 + y_offset), 8, 8, 40, 8, 8, 8, 64, 64);
             }
 
-            FontRenderers.sf_bold_mini.drawString(context.getMatrices(), player.split(":")[0], getPosX() + 13, getPosY() + 19 + y_offset, HudEditor.textColor.getValue().getColor());
-            FontRenderers.sf_bold_mini.drawCenteredString(context.getMatrices(), (player.split(":")[1].equalsIgnoreCase("vanish") ? Formatting.RED + "O" : player.split(":")[1].equalsIgnoreCase("gm3") ? Formatting.YELLOW + "O" : Formatting.GREEN + "O"),
+            String displayName = player.split(":")[0];
+            FontRenderers.sf_bold_mini.drawString(context.getMatrices(), displayName, getPosX() + 13, getPosY() + 19 + y_offset, HudEditor.textColor.getValue().getColor());
+            FontRenderers.sf_bold_mini.drawCenteredString(context.getMatrices(), (player.split(":")[1].equalsIgnoreCase("vanish") ? Formatting.RED + "V" : player.split(":")[1].equalsIgnoreCase("gm3") ? Formatting.YELLOW + "Spec" : player.split(":")[1].equalsIgnoreCase("active") ? Formatting.GREEN + "A" : Formatting.GREEN + "O"),
                     px + (getPosX() + max_width - px) / 2f, getPosY() + 19 + y_offset, HudEditor.textColor.getValue().getColor());
-            Render2DEngine.drawRect(context.getMatrices(), px, getPosY() + 17 + y_offset, 0.5f, 8, new Color(0x44FFFFFF, true));
             y_offset += 9;
         }
         Render2DEngine.popWindow();
@@ -171,7 +199,7 @@ public class StaffBoard extends HudElement {
     @Override
     public void onUpdate() {
         if (mc.player != null && mc.player.age % 10 == 0) {
-            players = getVanish();
+            players = new ArrayList<>();
             notSpec = getOnlinePlayerD();
             players.sort(String::compareTo);
             notSpec.sort(String::compareTo);
@@ -192,5 +220,75 @@ public class StaffBoard extends HudElement {
             }
 
         return id;
+    }
+
+    // Метод для очистки staffList (опционально)
+    public static void clearStaffList() {
+        staffList.clear();
+    }
+
+    // Метод для удаления конкретного игрока из памяти (опционально)
+    public static void removeFromStaffList(String playerName) {
+        staffList.remove(playerName.toLowerCase());
+        saveStaffList();
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public static void saveStaffList() {
+        File file = new File(ConfigManager.MISC_FOLDER, "stafflist.txt");
+        try {
+            ConfigManager.MISC_FOLDER.mkdirs();
+            file.createNewFile();
+        } catch (Exception ignored) {
+        }
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            // Сохраняем автоматически добавленных (staffList)
+            writer.write("# Auto-added staff (from gm3)\n");
+            for (String name : staffList) {
+                writer.write(name + "\n");
+            }
+            // Сохраняем вручную добавленных (StaffCommand.staffNames)
+            writer.write("# Manually added staff\n");
+            for (String name : StaffCommand.staffNames) {
+                writer.write("!" + name + "\n"); // Префикс "!" для различения
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    public static void loadStaffList() {
+        try {
+            File file = new File(ConfigManager.MISC_FOLDER, "stafflist.txt");
+
+            if (file.exists()) {
+                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                    boolean isManualSection = false;
+                    while (reader.ready()) {
+                        String line = reader.readLine().trim();
+                        if (line.isEmpty() || line.startsWith("#")) {
+                            if (line.contains("Manually")) {
+                                isManualSection = true;
+                            } else if (line.contains("Auto-added")) {
+                                isManualSection = false;
+                            }
+                            continue;
+                        }
+                        
+                        if (isManualSection && line.startsWith("!")) {
+                            // Вручную добавленные
+                            String name = line.substring(1);
+                            if (!StaffCommand.staffNames.contains(name)) {
+                                StaffCommand.staffNames.add(name);
+                            }
+                        } else if (!isManualSection) {
+                            // Автоматически добавленные
+                            staffList.add(line.toLowerCase());
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
     }
 }

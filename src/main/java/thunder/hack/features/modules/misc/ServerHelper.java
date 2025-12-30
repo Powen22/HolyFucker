@@ -2,35 +2,35 @@ package thunder.hack.features.modules.misc;
 
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.network.packet.c2s.play.CloseHandledScreenC2SPacket;
+import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractItemC2SPacket;
+import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import thunder.hack.gui.font.FontRenderers;
-import thunder.hack.HolyFacker;
 import thunder.hack.core.Managers;
+import thunder.hack.core.manager.client.AsyncManager;
+import thunder.hack.core.manager.world.WayPointManager;
 import thunder.hack.events.impl.EventSync;
 import thunder.hack.events.impl.PacketEvent;
 import thunder.hack.features.modules.Module;
-import thunder.hack.gui.notification.Notification;
+import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import thunder.hack.setting.Setting;
 import thunder.hack.setting.impl.Bind;
-import thunder.hack.utility.ThunderUtility;
 import thunder.hack.utility.Timer;
+import thunder.hack.core.manager.client.ModuleManager;
+import thunder.hack.features.modules.combat.Aura;
 import thunder.hack.utility.player.InventoryUtility;
+import thunder.hack.utility.player.InteractionUtility;
 import thunder.hack.utility.player.SearchInvResult;
 import thunder.hack.utility.render.Render2DEngine;
 import thunder.hack.features.modules.client.HudEditor;
@@ -38,8 +38,6 @@ import thunder.hack.features.modules.client.HudEditor;
 import java.awt.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static thunder.hack.features.modules.client.ClientSettings.isRu;
 
 public class ServerHelper extends Module {
     public ServerHelper() {
@@ -49,6 +47,7 @@ public class ServerHelper extends Module {
     private final Setting<Bind> desorient = new Setting<>("Desorient", new Bind(-1, false, false));
     private final Setting<Bind> trap = new Setting<>("Trap", new Bind(-1, false, false));
     public final Setting<Boolean> aucHelper = new Setting<>("AucHelper", true);
+    public final Setting<Boolean> autoWay = new Setting<>("AutoWay", true);
 
     private final Timer pvpTimer = new Timer();
     private AuctionItem cheapestItem = null;
@@ -58,12 +57,82 @@ public class ServerHelper extends Module {
 
     // Паттерн цены (как в AhHelper)
     private static final Pattern PRICE_PATTERN = Pattern.compile("Цена.*?\\$([\\d,]+)");
+    
+    // Паттерны для парсинга событий
+    private static final Pattern EVENT_COORDS_PATTERN = Pattern.compile("координатах\\s+(-?\\d+)\\s+(-?\\d+)\\s+(-?\\d+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern EVENT_NAME_PATTERN = Pattern.compile("\\[([^\\]]+)\\]|(Вулкан|Маяк|Метеорит)", Pattern.CASE_INSENSITIVE);
 
 
 
     @EventHandler
     public void onPacketReceive(PacketEvent.Receive event) {
-        // Removed functions: PhotoMatch, AntiTpHere, AirDropWay, SpekNotify
+        if (fullNullCheck() || !autoWay.getValue()) return;
+        
+        if (event.getPacket() instanceof GameMessageS2CPacket mPacket) {
+            String message = mPacket.content().getString();
+            processEventMessage(message);
+        }
+    }
+    
+    private void processEventMessage(String message) {
+        // Проверяем, содержит ли сообщение информацию о событии
+        boolean isEvent = message.contains("Вулкан") || message.contains("Маяк") || message.contains("Метеорит") ||
+                         message.contains("вулкан") || message.contains("маяк") || message.contains("метеорит");
+        
+        if (!isEvent) return;
+        
+        // Извлекаем координаты
+        Matcher coordsMatcher = EVENT_COORDS_PATTERN.matcher(message);
+        if (!coordsMatcher.find()) return;
+        
+        int x = Integer.parseInt(coordsMatcher.group(1));
+        int y = Integer.parseInt(coordsMatcher.group(2));
+        int z = Integer.parseInt(coordsMatcher.group(3));
+        
+        // Определяем название события
+        String eventName = "Событие";
+        if (message.contains("Вулкан") || message.contains("вулкан")) {
+            eventName = "Вулкан";
+        } else if (message.contains("Маяк") || message.contains("маяк")) {
+            eventName = "Маяк";
+        } else if (message.contains("Метеорит") || message.contains("метеорит")) {
+            eventName = "Метеорит";
+        } else {
+            // Пытаемся извлечь из формата [Название]
+            Matcher nameMatcher = EVENT_NAME_PATTERN.matcher(message);
+            if (nameMatcher.find()) {
+                String found = nameMatcher.group(1);
+                if (found == null) found = nameMatcher.group(2);
+                if (found != null && !found.isEmpty()) {
+                    eventName = found.trim();
+                }
+            }
+        }
+        
+        // Извлекаем уровень лута, если есть
+        String lootLevel = "";
+        if (message.contains("Уровень лута:")) {
+            String[] parts = message.split("Уровень лута:");
+            if (parts.length > 1) {
+                String levelPart = parts[1].trim();
+                // Берем первое слово после "Уровень лута:"
+                String[] levelWords = levelPart.split("\\s+");
+                if (levelWords.length > 0) {
+                    lootLevel = " " + levelWords[0];
+                }
+            }
+        }
+        
+        // Создаем название waypoint
+        String waypointName = eventName + lootLevel;
+        
+        // Получаем информацию о сервере и измерении
+        String server = mc.isInSingleplayer() ? "SinglePlayer" : mc.getNetworkHandler().getServerInfo().address;
+        String dimension = mc.world != null ? mc.world.getRegistryKey().getValue().getPath() : "overworld";
+        
+        // Создаем waypoint
+        WayPointManager.WayPoint wp = new WayPointManager.WayPoint(x, y, z, waypointName, server, dimension);
+        Managers.WAYPOINT.addWayPoint(wp);
     }
 
     @Override
@@ -217,10 +286,20 @@ public class ServerHelper extends Module {
             InventoryUtility.returnSlot();
             return true;
         } else if (invResult.found()) {
-            clickSlot(invResult.slot(), mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
-            sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
-            clickSlot(invResult.slot(), mc.player.getInventory().selectedSlot, SlotActionType.SWAP);
-            sendPacket(new CloseHandledScreenC2SPacket(mc.player.currentScreenHandler.syncId));
+            int epSlot = invResult.slot();
+            int originalSlot = mc.player.getInventory().selectedSlot;
+            // Используем точно такую же логику как в MiddleClick PearlThread для инвентаря
+            new Thread(() -> {
+                mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, epSlot, originalSlot, SlotActionType.SWAP, mc.player);
+                AsyncManager.sleep(150);
+                if (ModuleManager.aura.isEnabled() && Aura.target != null)
+                    mc.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(mc.player.getYaw(), mc.player.getPitch(), mc.player.isOnGround()));
+                InteractionUtility.sendSequencedPacket(id -> new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, id, mc.player.getYaw(), mc.player.getPitch()));
+                mc.player.networkHandler.sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
+                AsyncManager.sleep(150);
+                // Возвращаем предмет обратно
+                mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, epSlot, originalSlot, SlotActionType.SWAP, mc.player);
+            }).start();
             return true;
         }
         return false;

@@ -66,7 +66,9 @@ public class Notification {
             }
 
             FontRenderers.sf_bold_mini.drawString(matrix, title, x + 30, y + 6, HudEditor.textColor.getValue().getColor());
-            FontRenderers.sf_bold_mini.drawString(matrix, message, x + 30, y + 15, color.getRGB());
+            // Используем метод drawString с поддержкой цветовых кодов § в строке
+            // Передаем белый цвет как базовый, но цветовые коды в строке будут иметь приоритет
+            FontRenderers.sf_bold_mini.drawString(matrix, message, x + 30, y + 15, 1f, 1f, 1f, animatedAlpha / 255f);
             FontRenderers.mid_icons.drawString(matrix, icon, x + 5, y + 7, color.getRGB());
         } else {
             direction = isFinished();

@@ -188,11 +188,94 @@ public final class AutoSwap extends Module {
 
         if (swapNotify.getValue() && itemSlot != -1) {
             ItemStack swapStack = mc.player.getInventory().getStack(itemSlot);
-            String itemName = swapStack.getName().getString();
-            Managers.NOTIFICATION.publicity("AutoSwap", "Свапнул на " + itemName, 2, Notification.Type.SUCCESS);
+            net.minecraft.text.Text nameText = swapStack.getName();
+            
+            // Собираем строку с форматированием, обходя все части Text
+            StringBuilder formattedNameBuilder = new StringBuilder();
+            final String[] currentColor = {""};
+            
+            nameText.visit((style, text) -> {
+                // Получаем цвет из стиля текущей части
+                if (style.getColor() != null) {
+                    int rgb = style.getColor().getRgb();
+                    currentColor[0] = rgbToFormattingCode(rgb);
+                }
+                
+                // Убираем символы между [ ] и сами скобки из текста
+                String cleanText = text.replaceAll("\\[.*?\\]", "").replaceAll("\\[|\\]", "");
+                
+                // Добавляем цветовой код и текст
+                if (!cleanText.isEmpty()) {
+                    formattedNameBuilder.append(currentColor[0]).append(cleanText);
+                }
+                
+                return java.util.Optional.empty(); // Продолжаем обход всех частей
+            }, net.minecraft.text.Style.EMPTY);
+            
+            String formattedName = formattedNameBuilder.toString();
+            
+            // Если не удалось собрать строку, используем упрощенный метод
+            if (formattedName.isEmpty()) {
+                String itemName = nameText.getString().replaceAll("\\[.*?\\]", "").replaceAll("\\[|\\]", "");
+                if (nameText.getStyle().getColor() != null) {
+                    int rgb = nameText.getStyle().getColor().getRgb();
+                    formattedName = rgbToFormattingCode(rgb) + itemName;
+                } else {
+                    formattedName = itemName;
+                }
+            }
+            
+            Managers.NOTIFICATION.publicity("AutoSwap", "Свапнул на " + formattedName, 2, Notification.Type.SUCCESS);
         }
 
         return itemSlot;
+    }
+    
+    private String rgbToFormattingCode(int rgb) {
+        // Преобразуем RGB в ближайший код форматирования Minecraft
+        int r = (rgb >> 16) & 0xFF;
+        int g = (rgb >> 8) & 0xFF;
+        int b = rgb & 0xFF;
+        
+        // Стандартные цвета Minecraft
+        int[][] minecraftColors = {
+            {0, 0, 0},       // §0 черный
+            {0, 0, 170},     // §1 темно-синий
+            {0, 170, 0},     // §2 темно-зеленый
+            {0, 170, 170},   // §3 темно-голубой
+            {170, 0, 0},     // §4 темно-красный
+            {170, 0, 170},   // §5 темно-фиолетовый
+            {255, 170, 0},   // §6 золотой
+            {170, 170, 170}, // §7 серый
+            {85, 85, 85},    // §8 темно-серый
+            {85, 85, 255},   // §9 синий
+            {85, 255, 85},   // §a зеленый
+            {85, 255, 255},  // §b голубой
+            {255, 85, 85},   // §c красный
+            {255, 85, 255},  // §d розовый
+            {255, 255, 85},  // §e желтый
+            {255, 255, 255}  // §f белый
+        };
+        
+        char[] codes = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+        
+        // Находим ближайший цвет
+        int minDistance = Integer.MAX_VALUE;
+        int bestIndex = 15; // По умолчанию белый
+        
+        for (int i = 0; i < minecraftColors.length; i++) {
+            int dr = r - minecraftColors[i][0];
+            int dg = g - minecraftColors[i][1];
+            int db = b - minecraftColors[i][2];
+            int distance = dr * dr + dg * dg + db * db;
+            
+            if (distance < minDistance) {
+                minDistance = distance;
+                bestIndex = i;
+            }
+        }
+        
+        return "§" + codes[bestIndex];
     }
 
     public void swapTo(int slot) {

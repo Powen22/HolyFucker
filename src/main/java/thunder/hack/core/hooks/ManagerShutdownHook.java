@@ -1,6 +1,7 @@
 package thunder.hack.core.hooks;
 
 import thunder.hack.core.Managers;
+import thunder.hack.features.hud.impl.StaffBoard;
 
 public class ManagerShutdownHook extends Thread {
     @Override
@@ -11,5 +12,6 @@ public class ManagerShutdownHook extends Thread {
         Managers.MACRO.saveMacro();
         Managers.PROXY.saveProxies();
         Managers.ADDON.shutDown();
+        StaffBoard.saveStaffList();
     }
 }
