@@ -27,9 +27,10 @@ public class PotionHud extends HudElement {
             return "*:*";
         } else {
             int var1 = pe.getDuration();
-            int mins = var1 / 1200;
-            String sec = String.format("%02d", (var1 % 1200) / 20);
-            return mins + ":" + sec;
+            int totalSeconds = var1 / 20;
+            int mins = totalSeconds / 60;
+            int sec = totalSeconds % 60;
+            return mins + ":" + String.format("%02d", sec);
         }
     }
 
@@ -114,7 +115,6 @@ public class PotionHud extends HudElement {
 
             FontRenderers.sf_bold_mini.drawString(context.getMatrices(), potion.getName().getString() + " " + Formatting.RED + (potionEffect.getAmplifier() + 1), getPosX() + 12, getPosY() + 19 + y_offset, HudEditor.textColor.getValue().getColor());
             FontRenderers.sf_bold_mini.drawCenteredString(context.getMatrices(), getDuration(potionEffect), px + (getPosX() + max_width - px) / 2f, getPosY() + 19 + y_offset, HudEditor.textColor.getValue().getColor());
-            Render2DEngine.drawRect(context.getMatrices(), px, getPosY() + 17 + y_offset, 0.5f, 8, new Color(0x44FFFFFF, true));
             y_offset += 9;
         }
         Render2DEngine.popWindow();
