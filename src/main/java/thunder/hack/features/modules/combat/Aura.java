@@ -250,11 +250,18 @@ public class Aura extends Module {
 
         boolean sprint = Core.serverSprint;
         
+        // Проверяем, находимся ли мы под водой - обязательно сбрасываем спринт для избежания флагов
+        boolean isUnderwater = mc.player.isSubmergedInWater() || isAboveWater();
+        
         // Проверяем, был ли прыжок на 2 блока
         boolean isTwoBlockJump = maxJumpHeight > 1.4 && maxJumpHeight < 2.5;
         
         // Если прыжок на 2 блока и мы в воздухе - автоматически сбрасываем спринт для крита
         if (isTwoBlockJump && !mc.player.isOnGround() && (sprint || mc.player.isSprinting())) {
+            disableSprint();
+            sprint = false;
+        } else if (isUnderwater && (sprint || mc.player.isSprinting())) {
+            // Под водой всегда сбрасываем спринт при ударе для избежания флагов
             disableSprint();
             sprint = false;
         } else if (sprint && dropSprint.getValue()) {
