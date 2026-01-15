@@ -79,7 +79,7 @@ public class StaffBoard extends HudElement {
             boolean wasInGm3 = staffList.contains(profileNameLower) || staffList.contains(displayNameLower);
 
             // Если игрок сейчас в gm3 - ЗАПОМИНАЕМ его и показываем
-            if (player.getGameMode() == GameMode.SPECTATOR) {
+                if (player.getGameMode() == GameMode.SPECTATOR) {
                 // ДОБАВЛЯЕМ В ПАМЯТЬ только если в gm3
                 boolean wasAdded = staffList.add(profileNameLower) || staffList.add(displayNameLower);
                 if (wasAdded) {

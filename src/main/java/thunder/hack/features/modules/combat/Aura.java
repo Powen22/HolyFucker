@@ -106,11 +106,11 @@ public class Aura extends Module {
     public final Setting<AccelerateOnHit> accelerateOnHit = new Setting<>("AccelerateOnHit", AccelerateOnHit.Off).addToGroup(advanced);
     
     // Скрытые настройки с оптимальными значениями
-    private final int minYawStep = 80;      // Минимальный шаг поворота по yaw
-    private final int maxYawStep = 100;     // Максимальный шаг поворота по yaw  
+    private final int minYawStep = 120;      // Минимальный шаг поворота по yaw
+    private final int maxYawStep = 180;     // Максимальный шаг поворота по yaw
     private final float aimedPitchStep = 2f;    // Шаг pitch когда целимся
     private final float maxPitchStep = 15f;     // Максимальный шаг pitch
-    private final float pitchAccelerate = 5f;  // Ускорение pitch
+    private final float pitchAccelerate = 10f;  // Ускорение pitch
     private final float attackCooldown = 0.8f; // Атака при 80% кулдауна
     private final float attackBaseTime = 0f;   // Без базовой задержки
     private final int attackTickLimit = 0;     // Без лимита тиков (используем кулдаун)
@@ -186,11 +186,11 @@ public class Aura extends Module {
         boolean readyForAttack;
 
         if (grimRayTrace.getValue()) {
+            readyForAttack = autoCrit() && (lookingAtHitbox || skipRayTraceCheck());
             calcRotations(autoCrit());
-            readyForAttack = autoCrit() && (lookingAtHitbox || skipRayTraceCheck() || isTargetInSimpleRange());
         } else {
             calcRotations(autoCrit());
-            readyForAttack = autoCrit() && (lookingAtHitbox || skipRayTraceCheck() || isTargetInSimpleRange());
+            readyForAttack = autoCrit() && (lookingAtHitbox || skipRayTraceCheck());
         }
 
         if (readyForAttack) {
@@ -232,11 +232,21 @@ public class Aura extends Module {
     }
 
     public void attack() {
-        Criticals.cancelCrit = true;
-        ModuleManager.criticals.doCrit();
+        // Проверяем, находится ли игрок в воде или лаве
+        boolean inWaterOrLava = mc.player.isSubmergedInWater() || mc.player.isInLava() || isAboveWater();
+
+        // Вызываем крит только если НЕ в воде/лаве
+        if (!inWaterOrLava) {
+            Criticals.cancelCrit = true;
+            ModuleManager.criticals.doCrit();
+        }
+
         int prevSlot = switchMethod();
         mc.interactionManager.attackEntity(mc.player, target);
-        Criticals.cancelCrit = false;
+        if (!inWaterOrLava) {
+            Criticals.cancelCrit = false;
+        }
+
         swingHand();
         hitTicks = getHitTicks();
         if (prevSlot != -1)
@@ -249,24 +259,8 @@ public class Aura extends Module {
             sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.RELEASE_USE_ITEM, BlockPos.ORIGIN, Direction.DOWN));
 
         boolean sprint = Core.serverSprint;
-        
-        // Проверяем, находимся ли мы под водой - обязательно сбрасываем спринт для избежания флагов
-        boolean isUnderwater = mc.player.isSubmergedInWater() || isAboveWater();
-        
-        // Проверяем, был ли прыжок на 2 блока
-        boolean isTwoBlockJump = maxJumpHeight > 1.4 && maxJumpHeight < 2.5;
-        
-        // Если прыжок на 2 блока и мы в воздухе - автоматически сбрасываем спринт для крита
-        if (isTwoBlockJump && !mc.player.isOnGround() && (sprint || mc.player.isSprinting())) {
+        if (sprint && dropSprint.getValue())
             disableSprint();
-            sprint = false;
-        } else if (isUnderwater && (sprint || mc.player.isSprinting())) {
-            // Под водой всегда сбрасываем спринт при ударе для избежания флагов
-            disableSprint();
-            sprint = false;
-        } else if (sprint && dropSprint.getValue()) {
-            disableSprint();
-        }
 
         if (rotationMode.is(Mode.Grim))
             sendPacket(new PlayerMoveC2SPacket.Full(mc.player.getX(), mc.player.getY(), mc.player.getZ(), rotationYaw, rotationPitch, mc.player.isOnGround()));
@@ -373,6 +367,14 @@ public class Aura extends Module {
         if (mc.player.isUsingItem() && pauseWhileEating.getValue())
             return;
 
+        // Под водой всегда сбрасываем спринт для избежания флагов
+        if (mc.player.isSubmergedInWater() || isAboveWater()) {
+            if (Core.serverSprint || mc.player.isSprinting()) {
+                disableSprint();
+                Core.serverSprint = false;
+            }
+        }
+
         if (!haveWeapon())
             return;
 
@@ -426,7 +428,7 @@ public class Aura extends Module {
         boolean reasonForSkipCrit =
                 !smartCrit.getValue().isEnabled()
                         || mc.player.getAbilities().flying
-                        || mc.player.isFallFlying()
+                        || (mc.player.isFallFlying() || (ModuleManager.elytraRecast != null && ModuleManager.elytraRecast.isEnabled()))
                         || mc.player.hasStatusEffect(StatusEffects.BLINDNESS)
                         || mc.player.hasStatusEffect(StatusEffects.SLOW_FALLING)
                         || Managers.PLAYER.isInWeb();
@@ -502,7 +504,7 @@ public class Aura extends Module {
     }
 
     public float getAttackCooldown() {
-        return MathHelper.clamp(((float) ((ILivingEntity) mc.player).getLastAttackedTicks() + attackBaseTime) / getAttackCooldownProgressPerTick(), 0.0F, 1.0F);
+        return MathHelper.clamp(((float) ((ILivingEntity) mc.player).getLastAttackedTicks() + attackBaseTime) / getAttackCooldownProgressPerTick(), 0.0F, 0.92F);
     }
 
     private void updateTarget() {
@@ -720,54 +722,28 @@ public class Aura extends Module {
     }
 
     public boolean isInRange(Entity target) {
-        float maxRange = getRange() + aimRange.getValue();
-        float maxRangeSq = maxRange * maxRange;
-        
-        // Получаем позицию игрока (глаза)
-        Vec3d eyePos = mc.player.getEyePos();
-        
-        // Получаем хитбокс таргета
-        Box targetBox = target.getBoundingBox();
-        
-        // Вычисляем ближайшую точку хитбокса к позиции глаз
-        double closestX = MathHelper.clamp(eyePos.x, targetBox.minX, targetBox.maxX);
-        double closestY = MathHelper.clamp(eyePos.y, targetBox.minY, targetBox.maxY);
-        double closestZ = MathHelper.clamp(eyePos.z, targetBox.minZ, targetBox.maxZ);
-        Vec3d closestPoint = new Vec3d(closestX, closestY, closestZ);
-        
-        // Быстрая проверка: если ближайшая точка хитбокса слишком далеко - сразу false
-        double closestDistSq = eyePos.squaredDistanceTo(closestPoint);
-        if (closestDistSq > (maxRange + 0.5) * (maxRange + 0.5)) {
+
+        if (PlayerUtility.squaredDistanceFromEyes(target.getPos().add(0, target.getEyeHeight(target.getPose()), 0)) > getSquaredRotateDistance() + 4) {
             return false;
         }
-        
-        // Проверяем больше точек хитбокса для лучшего обнаружения на ровной местности
-        Vec3d[] checkPoints = {
-            target.getPos().add(0, target.getHeight() / 2.0, 0), // Центр
-            target.getPos().add(0, target.getEyeHeight(target.getPose()), 0), // Глаза
-            target.getPos().add(0, 0.5, 0), // Низ
-            target.getPos().add(0, target.getHeight() * 0.75, 0), // Верхняя часть
-            target.getPos().add(0, target.getHeight() * 0.25, 0), // Нижняя часть
-            // Углы хитбокса для лучшего обнаружения
-            new Vec3d(targetBox.minX, targetBox.minY + target.getHeight() / 2.0, targetBox.minZ),
-            new Vec3d(targetBox.maxX, targetBox.minY + target.getHeight() / 2.0, targetBox.maxZ),
-            new Vec3d(targetBox.minX, targetBox.minY + target.getHeight() / 2.0, targetBox.maxZ),
-            new Vec3d(targetBox.maxX, targetBox.minY + target.getHeight() / 2.0, targetBox.minZ),
-        };
-        
-        // Проверяем только дистанцию, без проверки видимости
-        for (Vec3d point : checkPoints) {
-            double pointDistSq = eyePos.squaredDistanceTo(point);
-            if (pointDistSq <= maxRangeSq) {
-                return true;
+
+        float[] rotation;
+        float halfBox = (float) (target.getBoundingBox().getLengthX() / 2f);
+
+        // уменьшил частоту выборки
+        for (float x1 = -halfBox; x1 <= halfBox; x1 += 0.15f) {
+            for (float z1 = -halfBox; z1 <= halfBox; z1 += 0.15f) {
+                for (float y1 = 0.05f; y1 <= target.getBoundingBox().getLengthY(); y1 += 0.25f) {
+                    if (PlayerUtility.squaredDistanceFromEyes(new Vec3d(target.getX() + x1, target.getY() + y1, target.getZ() + z1)) > getSquaredRotateDistance())
+                        continue;
+
+                    rotation = Managers.PLAYER.calcAngle(new Vec3d(target.getX() + x1, target.getY() + y1, target.getZ() + z1));
+                    if (Managers.PLAYER.checkRtx(rotation[0], rotation[1], (float) Math.sqrt(getSquaredRotateDistance()), getWallRange(), rayTrace.getValue())) {
+                        return true;
+                    }
+                }
             }
         }
-        
-        // Дополнительная проверка: проверяем ближайшую точку хитбокса
-        if (closestDistSq <= maxRangeSq) {
-            return true;
-        }
-        
         return false;
     }
 
@@ -829,28 +805,7 @@ public class Aura extends Module {
         if (entity instanceof ArmorStandEntity) return true;
         if (entity instanceof CatEntity) return true;
         if (skipNotSelected(entity)) return true;
-        
-        // Улучшенная проверка FOV: проверяем центр хитбокса и глаза, а не только позицию
-        Vec3d centerPos = ent.getPos().add(0, ent.getHeight() / 2.0, 0);
-        Vec3d eyePos = ent.getPos().add(0, ent.getEyeHeight(ent.getPose()), 0);
-        
-        // Для очень близких таргетов (в пределах 2 блоков) делаем проверку FOV более мягкой
-        double distSq = mc.player.squaredDistanceTo(ent.getPos());
-        boolean isVeryClose = distSq <= 4.0; // 2 блока в квадрате
-        
-        boolean inFOV = InteractionUtility.isVecInFOV(centerPos, fov.getValue()) 
-                     || InteractionUtility.isVecInFOV(eyePos, fov.getValue())
-                     || InteractionUtility.isVecInFOV(ent.getPos(), fov.getValue());
-        
-        // Для очень близких таргетов увеличиваем FOV на 30 градусов
-        if (!inFOV && !isVeryClose) {
-            int extendedFOV = fov.getValue() + 30;
-            inFOV = InteractionUtility.isVecInFOV(centerPos, extendedFOV) 
-                 || InteractionUtility.isVecInFOV(eyePos, extendedFOV)
-                 || InteractionUtility.isVecInFOV(ent.getPos(), extendedFOV);
-        }
-        
-        if (!inFOV) return true;
+        if (!InteractionUtility.isVecInFOV(ent.getPos(), fov.getValue())) return true;
 
         if (entity instanceof PlayerEntity player) {
             if (ModuleManager.antiBot.isEnabled() && AntiBot.bots.contains(entity))

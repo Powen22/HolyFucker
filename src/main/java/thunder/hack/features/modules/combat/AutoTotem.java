@@ -57,6 +57,8 @@ public final class AutoTotem extends Module {
     @EventHandler
     public void onSync(EventSync e) {
         if (fullNullCheck()) return;
+        // Не брать тотем при использовании предмета
+        if (mc.player.isUsingItem()) return;
         swapTo(getItemSlot());
 
         delay--;
@@ -172,6 +174,8 @@ public final class AutoTotem extends Module {
 
     public int getItemSlot() {
         if (mc.player == null || mc.world == null) return -1;
+        // Не брать тотем при использовании предмета
+        if (mc.player.isUsingItem()) return -1;
 
         Item offHandItem = mc.player.getOffHandStack().getItem();
 

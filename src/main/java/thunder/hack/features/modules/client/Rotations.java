@@ -46,6 +46,7 @@ public class Rotations extends Module {
     }
 
     public void modifyVelocity(EventPlayerTravel e) {
+        // Логика для Элитр (оставляем как есть, если она нужна)
         if (ModuleManager.aura.isEnabled() && ModuleManager.aura.target != null && ModuleManager.aura.rotationMode.not(Aura.Mode.None)
                 && Managers.PLAYER.ticksElytraFlying > 5) {
             if (e.isPre()) {
@@ -61,12 +62,22 @@ public class Rotations extends Module {
             return;
         }
 
+        // ИСПРАВЛЕННЫЙ БЛОК FOCUSED
         if (moveFix.getValue() == MoveFix.Focused && !Float.isNaN(fixRotation) && !mc.player.isRiding()) {
             if (e.isPre()) {
                 prevYaw = mc.player.getYaw();
+                prevPitch = mc.player.getPitch(); // Сохраняем оригинальный питч камеры
+
                 mc.player.setYaw(fixRotation);
+
+                // FIX: Если работает Аура, мы должны использовать её Pitch для расчетов физики.
+                // Иначе под водой вектор движения будет рассчитан с Pitch камеры, а пакет уйдет с Pitch ауры -> десинк.
+                if (ModuleManager.aura.isEnabled() && ModuleManager.aura.target != null) {
+                    mc.player.setPitch(ModuleManager.aura.rotationPitch);
+                }
             } else {
                 mc.player.setYaw(prevYaw);
+                mc.player.setPitch(prevPitch); // Восстанавливаем питч камеры, чтобы не дергало экран
             }
         }
     }
